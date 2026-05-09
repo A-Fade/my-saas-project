@@ -35,10 +35,10 @@ export default function Dashboard() {
     setLoading(false);
   }
 
-  // 📊 FETCH DATA (Filtered by user_id)
+  // 📊 FETCH DATA (Strictly filtered by user_id)
   async function fetchData(userId: string) {
     const [pRes, wRes, payRes] = await Promise.all([
-      supabase.from("projects").select("*").eq("user_id", userId),
+      supabase.from("projects").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
       supabase.from("workers").select("*").eq("user_id", userId),
       supabase.from("payments").select("*").eq("user_id", userId),
     ]);
@@ -56,8 +56,10 @@ export default function Dashboard() {
     );
   }
 
+  // 💰 Calculate total salary from filtered payments
   const totalSalary = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
 
+  // 📈 Chart Data
   const chartData = payments.slice(-7).map((p, i) => ({
     name: `Day ${i + 1}`,
     amount: Number(p.amount || 0),
@@ -84,13 +86,13 @@ export default function Dashboard() {
           />
           <StatsCard 
             title="Worker Salary" 
-            value={`₹${totalSalary}`} 
+            value={`₹${totalSalary.toLocaleString()}`} 
             color="bg-gradient-to-br from-orange-500 to-orange-600 text-white" 
             link="/payments" 
           />
           <StatsCard 
             title="Active Projects" 
-            value={projects.filter((p) => p.status === "active").length} 
+            value={projects.filter((p) => p.status?.toLowerCase() === "active").length} 
             color="bg-gradient-to-br from-violet-600 to-violet-700 text-white" 
             link="/projects" 
           />
@@ -98,6 +100,7 @@ export default function Dashboard() {
 
         {/* MAIN GRID */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* RECENT PROJECTS TABLE */}
           <div className="xl:col-span-1 bg-white border border-slate-200 rounded-[2rem] shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
@@ -117,17 +120,23 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {projects.slice(0, 5).map((p: any) => (
-                    <tr key={p.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition cursor-pointer" onClick={() => router.push(`/projects/${p.id}`)}>
-                      <td className="py-4 font-bold text-slate-700"> {p.name} </td>
-                      <td className="text-slate-500 font-medium"> {p.location} </td>
-                      <td>
-                        <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase ${p.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                          {p.status}
-                        </span>
-                      </td>
+                  {projects.length > 0 ? (
+                    projects.slice(0, 5).map((p: any) => (
+                      <tr key={p.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition cursor-pointer" onClick={() => router.push(`/projects/${p.id}`)}>
+                        <td className="py-4 font-bold text-slate-700"> {p.name} </td>
+                        <td className="text-slate-500 font-medium"> {p.location} </td>
+                        <td>
+                          <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase ${p.status?.toLowerCase() === 'active' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                            {p.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={3} className="py-10 text-center text-slate-400 font-bold italic">No projects found</td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
@@ -149,20 +158,24 @@ export default function Dashboard() {
             </div>
 
             <div className="p-8">
-              <ResponsiveContainer width="100%" height={320}>
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="salaryGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 'bold' }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-                  <Area type="monotone" dataKey="amount" stroke="#2563eb" strokeWidth={4} fill="url(#salaryGradient)" />
-                </AreaChart>
-              </ResponsiveContainer>
+              {chartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={320}>
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="salaryGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 'bold' }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                    <Area type="monotone" dataKey="amount" stroke="#2563eb" strokeWidth={4} fill="url(#salaryGradient)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[320px] flex items-center justify-center text-slate-400 font-bold border-2 border-dashed rounded-3xl">No payment data to chart</div>
+              )}
             </div>
           </div>
         </div>
