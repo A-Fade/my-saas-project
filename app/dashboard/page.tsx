@@ -30,16 +30,19 @@ export default function Dashboard() {
       router.push("/login");
       return;
     }
-    await fetchData();
+    // ✅ Pass user.id to fetch only personal data
+    await fetchData(user.id);
     setLoading(false);
   }
 
-  async function fetchData() {
+  // 📊 FETCH DATA (Filtered by user_id)
+  async function fetchData(userId: string) {
     const [pRes, wRes, payRes] = await Promise.all([
-      supabase.from("projects").select("*"),
-      supabase.from("workers").select("*"),
-      supabase.from("payments").select("*"),
+      supabase.from("projects").select("*").eq("user_id", userId),
+      supabase.from("workers").select("*").eq("user_id", userId),
+      supabase.from("payments").select("*").eq("user_id", userId),
     ]);
+    
     setProjects(pRes.data || []);
     setWorkers(wRes.data || []);
     setPayments(payRes.data || []);
@@ -65,9 +68,8 @@ export default function Dashboard() {
       <Topbar />
 
       <div className="max-w-7xl mx-auto p-4 md:p-6">
-        {/* STATS SECTION - Heading color fixed to White via Props/Classes */}
+        {/* STATS SECTION */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
-          {/* Note: StatsCard ke andar ka title text white hona chaiye */}
           <StatsCard 
             title="Total Projects" 
             value={projects.length} 
