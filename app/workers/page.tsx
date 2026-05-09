@@ -13,7 +13,7 @@ export default function Workers() {
   const [phone, setPhone] = useState("");
   const [salary, setSalary] = useState("");
   const [projectId, setProjectId] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null); // ✅ UUID is string
+  const [editingId, setEditingId] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const router = useRouter();
@@ -23,189 +23,88 @@ export default function Workers() {
   async function checkUser() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/login"); return; }
-    fetchAll();
+    fetchAll(user.id);
   }
 
-  async function fetchAll() {
+  async function fetchAll(userId: string) {
     setLoading(true);
-    const { data: workersData, error: wError } = await supabase
-      .from("workers")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const { data: wData } = await supabase.from("workers").select("*").eq("user_id", userId).order("id", { ascending: false });
+    const { data: pData } = await supabase.from("projects").select("*").eq("user_id", userId);
 
-    const { data: projectsData } = await supabase.from("projects").select("*");
-
-    if (wError) {
-      toast.error("Failed to load workers");
-      setLoading(false);
-      return;
-    }
-
-    // ✅ Match UUID worker.project_id with int8 project.id
-    const mergedWorkers = (workersData || []).map((worker: any) => {
-      const project = (projectsData || []).find(
-        (p: any) => String(p.id) === String(worker.project_id)
-      );
+    const merged = (wData || []).map((worker: any) => {
+      const project = (pData || []).find((p: any) => String(p.id) === String(worker.project_id));
       return { ...worker, projects: project || null };
     });
 
-    setWorkers(mergedWorkers);
-    setProjects(projectsData || []);
+    setWorkers(merged);
+    setProjects(pData || []);
     setLoading(false);
   }
 
   async function handleSave() {
-    if (!name || !phone || !salary || !projectId) {
-      toast.error("Fill all fields");
-      return;
-    }
-
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!name || !phone || !salary || !projectId || !user) { toast.error("Fill all fields"); return; }
     setSaving(true);
-    
-    // ✅ Payload data types fixed
-    const payload = {
-      name: name.trim(),
-      phone: phone.trim(),
-      salary: Number(salary),
-      project_id: Number(projectId), // ✅ int8 needs Number
-    };
+    const payload = { name: name.trim(), phone: phone.trim(), salary: Number(salary), project_id: projectId, user_id: user.id };
 
     if (editingId) {
-      // ✅ UPDATE using UUID string
-      const { error } = await supabase
-        .from("workers")
-        .update(payload)
-        .eq("id", editingId); 
-
-      if (error) {
-        console.error("Update Error:", error);
-        toast.error(error.message);
-        setSaving(false);
-        return;
-      }
-      toast.success("Worker updated");
+      const { error } = await supabase.from("workers").update(payload).eq("id", editingId);
+      if (error) toast.error(error.message);
+      else toast.success("Worker updated");
     } else {
-      // ADD
       const { error } = await supabase.from("workers").insert([payload]);
-      if (error) {
-        toast.error(error.message);
-        setSaving(false);
-        return;
-      }
-      toast.success("Worker added");
+      if (error) toast.error(error.message);
+      else toast.success("Worker added");
     }
-
-    // RESET
-    setEditingId(null);
-    setName(""); setPhone(""); setSalary(""); setProjectId("");
-    await fetchAll();
+    resetForm();
+    fetchAll(user.id);
     setSaving(false);
   }
 
-  async function deleteWorker(id: string) {
-    if (!window.confirm("Delete this worker?")) return;
-    const { error } = await supabase.from("workers").delete().eq("id", id);
-    if (error) toast.error(error.message);
-    else { toast.success("Worker deleted"); fetchAll(); }
-  }
-
   function editWorker(w: any) {
-    setEditingId(w.id);
-    setName(w.name || "");
-    setPhone(w.phone || "");
-    setSalary(String(w.salary || ""));
-    setProjectId(w.project_id ? String(w.project_id) : "");
+    setEditingId(w.id); setName(w.name || ""); setPhone(w.phone || ""); setSalary(String(w.salary || "")); setProjectId(w.project_id ? String(w.project_id) : "");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function resetForm() { setEditingId(null); setName(""); setPhone(""); setSalary(""); setProjectId(""); }
+
   return (
     <div className="flex min-h-screen bg-slate-100">
-      <div className="hidden md:block fixed left-0 top-0 h-screen w-64 z-40">
-        <Sidebar />
-      </div>
+      <div className="hidden md:block w-64 fixed left-0 top-0 h-screen z-40"><Sidebar /></div>
       <div className="flex-1 md:ml-64">
         <Topbar />
         <div className="max-w-7xl mx-auto p-4 md:p-6">
-          <div className="mb-8">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div>
-                <h1 className="text-4xl font-black text-slate-800"> 👷 Workers </h1>
-                <p className="text-slate-500 mt-2"> Manage all your workers professionally </p>
-              </div>
-              <div className="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-sm">
-                <p className="text-sm text-slate-500"> Total Workers </p>
-                <h2 className="text-3xl font-black text-blue-700"> {workers.length} </h2>
-              </div>
-            </div>
+          <div className="mb-8 flex items-center justify-between flex-wrap gap-4">
+            <div><h1 className="text-4xl font-black text-slate-800"> 👷 Workers </h1><p className="text-slate-500 mt-2 font-medium"> Manage all your workers professionally </p></div>
+            <div className="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-sm"><p className="text-sm text-slate-500"> Total Workers </p><h2 className="text-3xl font-black text-blue-700"> {workers.length} </h2></div>
           </div>
 
-          {/* FORM */}
           <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden mb-8">
-            <div className="bg-gradient-to-r from-blue-700 to-indigo-800 p-6 text-white">
-              <h2 className="text-2xl font-bold"> {editingId ? "✏️ Edit Worker" : "➕ Add New Worker"} </h2>
-            </div>
+            <div className="bg-gradient-to-r from-blue-700 to-indigo-800 p-6 text-white"><h2 className="text-2xl font-bold"> {editingId ? "✏️ Edit Worker" : "➕ Add New Worker"} </h2><p className="text-blue-100 mt-1 font-medium"> Add and manage workers easily </p></div>
             <div className="p-6 md:p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2"> Worker Name </label>
-                  <input className="w-full border border-slate-300 bg-slate-50 px-4 py-3 rounded-2xl outline-none focus:ring-4 focus:ring-blue-200" value={name} onChange={(e) => setName(e.target.value)} />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2"> Phone Number </label>
-                  <input className="w-full border border-slate-300 bg-slate-50 px-4 py-3 rounded-2xl outline-none focus:ring-4 focus:ring-blue-200" value={phone} onChange={(e) => setPhone(e.target.value)} />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2"> Salary </label>
-                  <input className="w-full border border-slate-300 bg-slate-50 px-4 py-3 rounded-2xl outline-none focus:ring-4 focus:ring-blue-200" value={salary} onChange={(e) => setSalary(e.target.value)} />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2"> Select Project </label>
-                  <select className="w-full border border-slate-300 bg-slate-50 px-4 py-3 rounded-2xl outline-none focus:ring-4 focus:ring-blue-200" value={projectId} onChange={(e) => setProjectId(e.target.value)}>
-                    <option value=""> Select Project </option>
-                    {projects.map((p: any) => ( <option key={p.id} value={String(p.id)}> {p.name} </option> ))}
-                  </select>
-                </div>
+                <input className="border-2 border-slate-50 bg-slate-50 p-4 rounded-2xl outline-none focus:border-blue-400" placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
+                <input className="border-2 border-slate-50 bg-slate-50 p-4 rounded-2xl outline-none focus:border-blue-400" placeholder="Phone" value={phone} onChange={e => setPhone(e.target.value)} />
+                <input className="border-2 border-slate-50 bg-slate-50 p-4 rounded-2xl outline-none focus:border-blue-400" placeholder="Salary" value={salary} onChange={e => setSalary(e.target.value)} />
+                <select className="border-2 border-slate-50 bg-slate-50 p-4 rounded-2xl outline-none focus:border-blue-400 font-bold" value={projectId} onChange={e => setProjectId(e.target.value)}>
+                  <option value="">Select Project</option>
+                  {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
               </div>
-              <div className="flex flex-wrap gap-4 mt-8">
-                <button onClick={handleSave} disabled={saving} className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-8 py-3 rounded-2xl font-semibold shadow-lg">
-                  {saving ? "Saving..." : editingId ? "Update Worker" : "Add Worker"}
-                </button>
-                {editingId && (
-                  <button onClick={() => { setEditingId(null); setName(""); setPhone(""); setSalary(""); setProjectId(""); }} className="bg-slate-200 text-slate-700 px-8 py-3 rounded-2xl font-semibold"> Cancel </button>
-                )}
-              </div>
+              <button onClick={handleSave} disabled={saving} className="mt-8 bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-10 py-3 rounded-2xl font-black shadow-lg"> {saving ? "Saving..." : editingId ? "Update" : "Add"} </button>
+              {editingId && <button onClick={resetForm} className="ml-4 bg-slate-200 px-10 py-3 rounded-2xl font-bold text-slate-700">Cancel</button>}
             </div>
           </div>
 
-          {/* LIST */}
-          {loading ? ( <p>Loading...</p> ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {workers.map((w: any) => (
-                <div key={w.id} className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-2xl transition-all">
-                  <div className="flex items-start justify-between mb-5">
-                    <div>
-                      <h3 className="text-2xl font-bold text-slate-800 mb-2"> {w.name} </h3>
-                      <p className="text-slate-500"> 📞 {w.phone} </p>
-                    </div>
-                  </div>
-                  <div className="space-y-3 mb-6">
-                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
-                      <p className="text-sm text-slate-500"> Salary </p>
-                      <h3 className="text-xl font-bold text-slate-800"> ₹{w.salary} </h3>
-                    </div>
-                    <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
-                      <p className="text-sm text-blue-600"> Project </p>
-                      <h3 className="text-lg font-semibold text-blue-800"> {w.projects?.name || "No Project"} </h3>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button onClick={() => editWorker(w)} className="bg-amber-400 text-white py-2 rounded-xl font-semibold"> Edit </button>
-                    <button onClick={() => deleteWorker(w.id)} className="bg-red-500 text-white py-2 rounded-xl font-semibold"> Delete </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {workers.map(w => (
+              <div key={w.id} className="bg-white p-6 rounded-3xl border shadow-sm hover:shadow-xl transition-all">
+                <h3 className="text-2xl font-black mb-2">{w.name}</h3><p className="text-slate-500 font-bold mb-4">📞 {w.phone}</p>
+                <div className="bg-blue-50 p-4 rounded-2xl mb-4 border border-blue-100"><p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Project</p><p className="font-bold text-blue-800">{w.projects?.name || 'No Project'}</p></div>
+                <div className="grid grid-cols-2 gap-2"><button onClick={() => editWorker(w)} className="bg-amber-400 text-white py-2 rounded-xl font-bold transition">Edit</button></div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
