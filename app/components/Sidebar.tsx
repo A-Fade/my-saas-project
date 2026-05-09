@@ -1,30 +1,30 @@
 "use client";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import {
-  Menu,
-  X,
-  LayoutDashboard,
-  Folder,
-  Users,
-  CreditCard,
+import { 
+  Menu, 
+  X, 
+  LayoutDashboard, 
+  Folder, 
+  Users, 
+  CreditCard, 
+  UserPlus // ✅ Naya icon clients ke liye
 } from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
-
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // ✅ Hydration fix
+  // ✅ HYDRATION FIX
   useEffect(() => {
     setMounted(true);
   }, []);
 
   if (!mounted) return null;
 
+  // 📌 MENU ITEMS (Clients add kar diya gaya hai)
   const menu = [
     {
       name: "Dashboard",
@@ -32,9 +32,14 @@ export default function Sidebar() {
       icon: <LayoutDashboard size={20} />,
     },
     {
-      name: "Projects", // 🔥 NEW
+      name: "Projects",
       path: "/projects",
       icon: <Folder size={20} />,
+    },
+    {
+      name: "Clients", // ✅ Naya Client link
+      path: "/clients",
+      icon: <UserPlus size={20} />,
     },
     {
       name: "Workers",
@@ -51,9 +56,14 @@ export default function Sidebar() {
   return (
     <>
       {/* MOBILE TOPBAR */}
-      <div className="md:hidden flex items-center justify-between p-4 bg-white shadow">
-        <h1 className="font-bold text-lg">🏗️ Builder</h1>
-        <button onClick={() => setOpen(!open)}>
+      <div className="md:hidden flex items-center justify-between p-4 bg-slate-900 text-white shadow-lg">
+        <h1 className="font-bold text-xl">
+          🏗️ Builder<span className="text-blue-400">Pro</span>
+        </h1>
+        <button
+          onClick={() => setOpen(!open)}
+          className="p-2 rounded-lg hover:bg-slate-800 transition"
+        >
           {open ? <X /> : <Menu />}
         </button>
       </div>
@@ -61,35 +71,40 @@ export default function Sidebar() {
       {/* SIDEBAR */}
       <div
         className={`
-        fixed md:relative top-0 left-0 h-full w-64 
-        bg-white border-r shadow-sm p-5 
-        transform transition-transform duration-300 z-50
-        ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+          fixed md:relative top-0 left-0 h-full w-64 bg-slate-900 text-white border-r border-slate-800 shadow-2xl p-5 
+          transform transition-transform duration-300 z-50
+          ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}
       >
         {/* LOGO */}
-        <h1 className="text-2xl font-bold mb-8 hidden md:block">
-          🏗️ Builder SaaS
-        </h1>
+        <div className="mb-10">
+          <h1 className="text-3xl font-black">
+            🏗️ Builder<span className="text-blue-400">Pro</span>
+          </h1>
+          <p className="text-slate-400 text-sm mt-2">
+            Construction Management SaaS
+          </p>
+        </div>
 
         {/* MENU */}
-        <nav className="space-y-2">
+        <nav className="space-y-3">
           {menu.map((item) => {
             const active = pathname === item.path;
-
             return (
               <Link key={item.path} href={item.path}>
                 <div
                   onClick={() => setOpen(false)}
-                  className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-300
-                  ${
-                    active
-                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
+                  className={`
+                    flex items-center gap-4 px-4 py-3 rounded-2xl cursor-pointer transition-all duration-300 font-medium
+                    ${
+                      active
+                        ? "bg-blue-600 text-white shadow-lg"
+                        : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                    }
+                  `}
                 >
-                  {item.icon}
-                  <span className="font-medium">{item.name}</span>
+                  <div>{item.icon}</div>
+                  <span>{item.name}</span>
                 </div>
               </Link>
             );
@@ -97,16 +112,24 @@ export default function Sidebar() {
         </nav>
 
         {/* FOOTER */}
-        <div className="absolute bottom-5 left-5 right-5 text-xs text-gray-400">
-          © 2026 Builder SaaS
+        <div className="absolute bottom-5 left-5 right-5">
+          <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+            <p className="text-sm font-semibold mb-1"> BuilderPro SaaS </p>
+            <p className="text-xs text-slate-400">
+              Manage projects, workers & payments easily.
+            </p>
+          </div>
+          <p className="text-xs text-slate-500 mt-4 text-center">
+            © 2026 BuilderPro
+          </p>
         </div>
       </div>
 
-      {/* OVERLAY (mobile) */}
+      {/* MOBILE OVERLAY */}
       {open && (
         <div
           onClick={() => setOpen(false)}
-          className="fixed inset-0 bg-black/30 md:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm md:hidden z-40"
         ></div>
       )}
     </>

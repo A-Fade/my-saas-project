@@ -1,262 +1,128 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import Topbar from "@/app/components/Topbar";
+import Sidebar from "@/app/components/Sidebar";
 
 export default function Projects() {
   const [projects, setProjects] = useState<any[]>([]);
-
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [status, setStatus] = useState("");
-
-  const [editingId, setEditingId] = useState<number | null>(null);
-
+  const [editingId, setEditingId] = useState<any>(null); // ✅ Fixed for UUID
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-
   const router = useRouter();
 
-  useEffect(() => {
-    checkUser();
-  }, []);
+  useEffect(() => { checkUser(); }, []);
 
   async function checkUser() {
     const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-
+    if (!user) { router.push("/login"); return; }
     fetchProjects();
   }
 
   async function fetchProjects() {
     setLoading(true);
-
-    const { data, error } = await supabase
-      .from("projects")
-      .select("*")
-      .order("id", { ascending: false });
-
-    if (error) {
-      toast.error("Failed to load projects");
-    }
-
+    const { data, error } = await supabase.from("projects").select("*").order("id", { ascending: false });
+    if (error) toast.error("Failed to load projects");
     setProjects(data || []);
     setLoading(false);
   }
 
-  // ➕ ADD / UPDATE
   async function handleSave() {
-    if (!name || !location || !status) {
-      toast.error("Fill all fields");
-      return;
-    }
-
+    if (!name || !location || !status) { toast.error("Fill all fields"); return; }
     setSaving(true);
+    const payload = { name, location, status };
 
     if (editingId) {
-      const { error } = await supabase
-        .from("projects")
-        .update({ name, location, status })
-        .eq("id", editingId);
-
-      if (error) {
-        toast.error("Update failed");
-        setSaving(false);
-        return;
-      }
-
-      toast.success("Project updated");
+      const { error } = await supabase.from("projects").update(payload).eq("id", editingId);
+      if (error) toast.error("Update failed");
+      else toast.success("Project updated");
     } else {
-      const { error } = await supabase.from("projects").insert([
-        { name, location, status },
-      ]);
-
-      if (error) {
-        toast.error("Add failed");
-        setSaving(false);
-        return;
-      }
-
-      toast.success("Project added");
+      const { error } = await supabase.from("projects").insert([payload]);
+      if (error) toast.error("Add failed");
+      else toast.success("Project added");
     }
-
     resetForm();
     fetchProjects();
     setSaving(false);
   }
 
-  // ✏️ EDIT
   function handleEdit(p: any) {
-    setName(p.name);
-    setLocation(p.location);
-    setStatus(p.status);
-    setEditingId(p.id);
+    setName(p.name); setLocation(p.location); setStatus(p.status); setEditingId(p.id);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  // ❌ DELETE
-  async function handleDelete(id: number) {
+  async function handleDelete(id: any) {
     if (!confirm("Delete this project?")) return;
-
-    const { error } = await supabase
-      .from("projects")
-      .delete()
-      .eq("id", id);
-
-    if (error) {
-      toast.error("Delete failed");
-      return;
-    }
-
-    toast.success("Project deleted");
-    fetchProjects();
+    const { error } = await supabase.from("projects").delete().eq("id", id);
+    if (error) toast.error("Delete failed");
+    else { toast.success("Project deleted"); fetchProjects(); }
   }
 
-  function resetForm() {
-    setName("");
-    setLocation("");
-    setStatus("");
-    setEditingId(null);
-  }
-
-  async function logout() {
-    await supabase.auth.signOut();
-    toast.success("Logged out");
-    router.push("/login");
-  }
-
-  // 👉 OPEN PROJECT DETAIL
-  function openProject(id: number) {
-    router.push(`/projects/${id}`);
-  }
+  function resetForm() { setName(""); setLocation(""); setStatus(""); setEditingId(null); }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-6">
+    <div className="min-h-screen bg-slate-100 flex">
+      <div className="hidden md:block w-64 fixed left-0 top-0 h-screen z-40"> <Sidebar /> </div>
+      <div className="flex-1 md:ml-64">
+        <Topbar />
+        <div className="max-w-7xl mx-auto p-4 md:p-6">
+          <div className="mb-8 flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h1 className="text-4xl font-black text-slate-800"> 📁 Projects </h1>
+              <p className="text-slate-500 mt-2"> Manage all your construction projects easily </p>
+            </div>
+            <div className="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-sm">
+              <p className="text-sm text-slate-500"> Total Projects </p>
+              <h2 className="text-3xl font-black text-blue-700"> {projects.length} </h2>
+            </div>
+          </div>
 
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">📁 Projects</h1>
+          {/* PREMIUM FORM */}
+          <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden mb-8">
+            <div className="bg-gradient-to-r from-blue-700 to-indigo-800 p-6 text-white">
+              <h2 className="text-2xl font-bold"> {editingId ? "✏️ Edit Project" : "➕ Add New Project"} </h2>
+            </div>
+            <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-5">
+              <input className="border border-slate-300 bg-slate-50 px-4 py-3 rounded-2xl outline-none focus:ring-4 focus:ring-blue-200" placeholder="Project Name" value={name} onChange={(e) => setName(e.target.value)} />
+              <input className="border border-slate-300 bg-slate-50 px-4 py-3 rounded-2xl outline-none focus:ring-4 focus:ring-blue-200" placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)} />
+              <select value={status} onChange={(e) => setStatus(e.target.value)} className="border border-slate-300 bg-slate-50 px-4 py-3 rounded-2xl outline-none focus:ring-4 focus:ring-blue-200">
+                <option value="">Select Status</option>
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="pending">Pending</option>
+              </select>
+              <div className="flex gap-4 mt-4">
+                <button onClick={handleSave} disabled={saving} className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-8 py-3 rounded-2xl font-semibold shadow-lg">
+                  {saving ? "Saving..." : editingId ? "Update Project" : "Add Project"}
+                </button>
+                {editingId && <button onClick={resetForm} className="bg-slate-200 px-8 py-3 rounded-2xl font-semibold"> Cancel </button>}
+              </div>
+            </div>
+          </div>
 
-        <button
-          onClick={logout}
-          className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
-        >
-          Logout
-        </button>
-      </div>
-
-      {/* FORM */}
-      <div className="bg-white p-5 rounded-2xl shadow mb-6 max-w-xl">
-        <h2 className="text-lg font-semibold mb-4">
-          {editingId ? "✏️ Edit Project" : "➕ Add Project"}
-        </h2>
-
-        <input
-          className="w-full border p-2 mb-3 rounded-lg"
-          placeholder="Project Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-
-        <input
-          className="w-full border p-2 mb-3 rounded-lg"
-          placeholder="Location"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-        />
-
-        <input
-          className="w-full border p-2 mb-3 rounded-lg"
-          placeholder="Status (active / completed)"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-        />
-
-        <div className="flex gap-2">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex-1 bg-blue-600 text-white py-2 rounded-lg"
-          >
-            {saving
-              ? "Saving..."
-              : editingId
-              ? "Update Project"
-              : "Add Project"}
-          </button>
-
-          {editingId && (
-            <button
-              onClick={resetForm}
-              className="bg-gray-400 text-white px-4 rounded-lg"
-            >
-              Cancel
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* LIST */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">📋 All Projects</h2>
-
-        {loading ? (
-          <p>Loading...</p>
-        ) : projects.length === 0 ? (
-          <p>No projects found</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-
+          {/* LIST */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {projects.map((p) => (
-              <div
-                key={p.id}
-                onClick={() => openProject(p.id)}
-                className="bg-white p-4 rounded-2xl shadow cursor-pointer hover:shadow-lg transition"
-              >
-                <h3 className="font-bold text-lg">{p.name}</h3>
-                <p className="text-gray-600">{p.location}</p>
-
-                <span className="inline-block mt-2 px-3 py-1 text-sm bg-green-100 text-green-700 rounded-full">
-                  {p.status}
-                </span>
-
-                {/* ACTIONS */}
-                <div
-                  className="flex gap-2 mt-4"
-                  onClick={(e) => e.stopPropagation()} // 🔥 prevent card click
-                >
-                  <button
-                    onClick={() => handleEdit(p)}
-                    className="flex-1 bg-yellow-400 text-white py-1 rounded"
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(p.id)}
-                    className="flex-1 bg-red-500 text-white py-1 rounded"
-                  >
-                    Delete
-                  </button>
-
-                  <button
-                    onClick={() => openProject(p.id)}
-                    className="flex-1 bg-blue-600 text-white py-1 rounded"
-                  >
-                    View
-                  </button>
+              <div key={p.id} className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all cursor-pointer" onClick={() => router.push(`/projects/${p.id}`)}>
+                <div className="flex justify-between mb-4">
+                  <h3 className="text-2xl font-bold text-slate-800">{p.name}</h3>
+                  <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">🏗️</div>
                 </div>
-
+                <p className="text-slate-500 mb-4">📍 {p.location}</p>
+                <div className="grid grid-cols-3 gap-2" onClick={(e) => e.stopPropagation()}>
+                  <button onClick={() => handleEdit(p)} className="bg-amber-400 text-white py-2 rounded-xl font-bold">Edit</button>
+                  <button onClick={() => handleDelete(p.id)} className="bg-red-500 text-white py-2 rounded-xl font-bold">Delete</button>
+                  <button onClick={() => router.push(`/projects/${p.id}`)} className="bg-blue-600 text-white py-2 rounded-xl font-bold">View</button>
+                </div>
               </div>
             ))}
-
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
