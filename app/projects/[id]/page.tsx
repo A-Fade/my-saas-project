@@ -5,7 +5,8 @@ import { useParams } from "next/navigation";
 import Sidebar from "@/app/components/Sidebar";
 import Topbar from "@/app/components/Topbar";
 import toast from "react-hot-toast";
-import { Trash2, Edit3, Plus, Users, Receipt, Loader2, CheckCircle, X, History, Save } from "lucide-react";
+import { Trash2, Edit3, Plus, Users, Receipt, Loader2, CheckCircle, X, History, Save, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function ProjectDetail() {
   const params = useParams();
@@ -21,7 +22,7 @@ export default function ProjectDetail() {
   const [itemAmount, setItemAmount] = useState("");
   const [addingSpend, setAddingSpend] = useState(false);
   const [editingSpendId, setEditingSpendId] = useState<any>(null);
-  const [budgetInput, setBudgetInput] = useState(""); // Budget State
+  const [budgetInput, setBudgetInput] = useState("");
 
   const todayDate = new Date().toISOString().split('T')[0];
 
@@ -51,17 +52,15 @@ export default function ProjectDetail() {
     finally { setLoading(false); }
   }
 
-  // --- NEW: BUDGET SAVE FUNCTION ---
   async function updateBudget() {
     const { error } = await supabase
       .from("projects")
       .update({ budget: Number(budgetInput) })
       .eq("id", params.id);
-    
     if (error) toast.error("Budget update failed");
     else {
       toast.success("Budget Saved Successfully!");
-      fetchData(); // Profit update karne ke liye
+      fetchData();
     }
   }
 
@@ -70,7 +69,10 @@ export default function ProjectDetail() {
     if (error) {
       if (error.code === '23505') toast.error("Aaj ki hajri lag chuki hai!");
       else toast.error("Hajri error");
-    } else { toast.success("Attendance Marked!"); fetchData(); }
+    } else {
+      toast.success("Attendance Marked!");
+      fetchData();
+    }
   }
 
   async function handleSaveSpend() {
@@ -79,7 +81,10 @@ export default function ProjectDetail() {
     const payload = { item: itemName, amount: Number(itemAmount), project_id: params.id };
     const { error } = editingSpendId ? await supabase.from("project_spends").update(payload).eq("id", editingSpendId) : await supabase.from("project_spends").insert([payload]);
     if (error) toast.error("Error saving spend");
-    else { setItemName(""); setItemAmount(""); setEditingSpendId(null); fetchData(); toast.success("Saved"); }
+    else {
+      setItemName(""); setItemAmount(""); setEditingSpendId(null); fetchData();
+      toast.success(editingSpendId ? "Updated" : "Saved");
+    }
     setAddingSpend(false);
   }
 
@@ -101,57 +106,91 @@ export default function ProjectDetail() {
     else { toast.success("Daily Report Saved!"); fetchData(); }
   }
 
-  if (loading) return <div className="h-screen flex items-center justify-center font-bold text-slate-500 text-xl">Loading...</div>;
+  if (loading) return (
+    <div className="h-screen flex items-center justify-center bg-white">
+      <div className="w-8 h-8 border-2 border-slate-800 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      <div className="hidden md:block w-64 fixed h-full z-40"><Sidebar /></div>
-      <div className="flex-1 md:ml-64">
+    <div className="min-h-screen bg-[#F8FAFC] flex font-sans antialiased text-slate-900">
+      <div className="hidden md:block w-64 fixed left-0 top-0 h-screen z-40 border-r border-slate-200">
+        <Sidebar />
+      </div>
+
+      <div className="flex-1 md:ml-64 flex flex-col">
         <Topbar />
-        <div className="max-w-7xl mx-auto p-4 md:p-8">
+        <main className="p-6 md:p-12 max-w-7xl mx-auto w-full">
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            {/* --- UPDATED BUDGET COLUMN WITH SAVE OPTION --- */}
-            <div className="bg-white p-6 rounded-3xl shadow-sm border-t-4 border-blue-600">
-               <p className="text-slate-400 font-bold text-[10px] uppercase mb-1">Project Budget</p>
-               <input 
-                 type="number" 
-                 value={budgetInput} 
-                 onChange={(e) => setBudgetInput(e.target.value)} 
-                 className="text-2xl font-black text-slate-800 w-full outline-none bg-transparent border-b border-dashed border-slate-200" 
-               />
-               <button onClick={updateBudget} className="flex items-center gap-1 text-[9px] font-black text-blue-600 mt-3 uppercase underline cursor-pointer">
-                 <Save size={10}/> Save Budget Amount
-               </button>
+          {/* Header with Back Button */}
+          <div className="mb-8 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link href="/projects" className="p-2 hover:bg-slate-200 rounded-full transition-colors">
+                <ArrowLeft size={20} />
+              </Link>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight text-slate-900 uppercase">{project?.name}</h1>
+                <p className="text-slate-500 font-medium text-sm mt-1">Project Financial & Team Overview</p>
+              </div>
+            </div>
+            <div className={`text-[10px] font-bold px-3 py-1.5 rounded-full border ${project?.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+              {project?.status?.toUpperCase()}
+            </div>
+          </div>
+
+          {/* 4 SUMMARY COLUMNS */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Project Budget</p>
+              <input 
+                type="number" 
+                value={budgetInput} 
+                onChange={(e) => setBudgetInput(e.target.value)} 
+                className="text-2xl font-bold text-slate-900 w-full outline-none bg-transparent border-b border-dashed border-slate-200 pb-1" 
+              />
+              <button onClick={updateBudget} className="flex items-center gap-1 text-[10px] font-bold text-slate-900 mt-3 hover:underline">
+                <Save size={12}/> SAVE BUDGET
+              </button>
             </div>
 
-            <div className="bg-white p-6 rounded-3xl shadow-sm border-t-4 border-amber-500">
-               <p className="text-slate-400 font-bold text-[10px] uppercase mb-1 text-amber-600">Today's Labor</p>
-               <h2 className="text-2xl font-black text-amber-600">₹{workers.reduce((acc, w) => attendanceData.some(a => a.worker_id === w.id && a.date === todayDate) ? acc + w.salary : acc, 0)}</h2>
-               <button onClick={saveDailyReport} className="flex items-center gap-1 text-[9px] font-bold text-blue-600 mt-2 uppercase underline"><Save size={10}/> Lock Report</button>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Today's Labor</p>
+              <h2 className="text-2xl font-bold text-amber-600">₹{workers.reduce((acc, w) => attendanceData.some(a => a.worker_id === w.id && a.date === todayDate) ? acc + w.salary : acc, 0)}</h2>
+              <button onClick={saveDailyReport} className="flex items-center gap-1 text-[10px] font-bold text-slate-900 mt-3 hover:underline">
+                <History size={12}/> LOCK REPORT
+              </button>
             </div>
 
-            <div className="bg-white p-6 rounded-3xl shadow-sm border-t-4 border-red-500">
-               <p className="text-slate-400 font-bold text-[10px] uppercase mb-1">Material Spent</p>
-               <h2 className="text-2xl font-black text-red-600">₹{spends.reduce((a,c)=>a+c.amount,0)}</h2>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Material Spent</p>
+              <h2 className="text-2xl font-bold text-slate-900">₹{spends.reduce((a,c)=>a+c.amount,0)}</h2>
             </div>
 
-            <div className="bg-white p-6 rounded-3xl shadow-sm border-t-4 border-green-500">
-               <p className="text-slate-400 font-bold text-[10px] uppercase mb-1">Current Profit</p>
-               <h2 className="text-2xl font-black text-green-600">₹{Number(budgetInput) - (spends.reduce((a,c)=>a+c.amount,0) + history.reduce((a,c)=>a+c.total_paid,0))}</h2>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Net Profit</p>
+              <h2 className="text-2xl font-bold text-emerald-600">₹{Number(budgetInput) - (spends.reduce((a,c)=>a+c.amount,0) + history.reduce((a,c)=>a+c.total_paid,0))}</h2>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* WORKERS SECTION */}
-            <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
-              <div className="bg-slate-800 p-6 text-white flex items-center gap-2 uppercase text-xs tracking-widest"><Users size={20}/><h3>Today's Attendance</h3></div>
-              <div className="p-6 space-y-4">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div className="px-6 py-5 bg-slate-50 border-b border-slate-200 flex items-center gap-2">
+                <Users size={18} className="text-slate-600"/>
+                <h3 className="font-bold text-sm uppercase tracking-wider text-slate-700">Attendance Log</h3>
+              </div>
+              <div className="p-4 space-y-3">
                 {workers.map(w => (
-                  <div key={w.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center">
-                    <div><p className="font-black text-slate-800 text-sm">{w.name}</p><p className="text-[10px] font-bold text-slate-500">₹{w.salary}/day</p></div>
-                    <button onClick={() => markAttendance(w.id)} className={`p-2 rounded-xl flex flex-col items-center gap-1 ${attendanceData.some(a=>a.worker_id===w.id && a.date===todayDate) ? 'bg-green-500 text-white' : 'bg-white border text-slate-400'}`}>
-                      <CheckCircle size={18}/><span className="text-[8px] font-black uppercase">Present</span>
+                  <div key={w.id} className="p-4 rounded-xl border border-slate-100 flex justify-between items-center hover:bg-slate-50 transition-colors">
+                    <div>
+                      <p className="font-bold text-slate-800">{w.name}</p>
+                      <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-tighter">Rate: ₹{w.salary}/day</p>
+                    </div>
+                    <button 
+                      onClick={() => markAttendance(w.id)} 
+                      className={`px-4 py-2 rounded-xl text-[10px] font-bold transition-all border ${attendanceData.some(a=>a.worker_id===w.id && a.date===todayDate) ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-800'}`}
+                    >
+                      {attendanceData.some(a=>a.worker_id===w.id && a.date===todayDate) ? 'PRESENT' : 'MARK PRESENT'}
                     </button>
                   </div>
                 ))}
@@ -159,26 +198,31 @@ export default function ProjectDetail() {
             </div>
 
             {/* MATERIAL SPEND SECTION */}
-            <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
-              <div className="bg-slate-800 p-6 text-white flex items-center gap-2 uppercase text-xs tracking-widest"><Receipt size={20}/><h3>Material Expenditure</h3></div>
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div className="px-6 py-5 bg-slate-50 border-b border-slate-200 flex items-center gap-2">
+                <Receipt size={18} className="text-slate-600"/>
+                <h3 className="font-bold text-sm uppercase tracking-wider text-slate-700">Material Expenses</h3>
+              </div>
               <div className="p-6">
-                <div className="flex flex-col gap-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-dashed border-slate-300">
+                <div className="flex flex-col gap-3 mb-6 p-4 rounded-xl bg-slate-50 border border-slate-200">
                   <div className="flex flex-col md:flex-row gap-2">
-                    <input placeholder="Item" value={itemName} onChange={(e) => setItemName(e.target.value)} className="flex-1 bg-white border p-3 rounded-xl text-sm outline-none" />
-                    <input placeholder="Amount" type="number" value={itemAmount} onChange={(e) => setItemAmount(e.target.value)} className="w-full md:w-28 bg-white border p-3 rounded-xl text-sm outline-none" />
+                    <input placeholder="Item (e.g. Cement)" value={itemName} onChange={(e) => setItemName(e.target.value)} className="flex-1 bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:border-slate-900 transition-all" />
+                    <input placeholder="Amount" type="number" value={itemAmount} onChange={(e) => setItemAmount(e.target.value)} className="w-full md:w-28 bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:border-slate-900 transition-all" />
                   </div>
-                  <button onClick={handleSaveSpend} className="bg-red-600 text-white p-3 rounded-xl font-bold flex items-center justify-center gap-2">
-                    {addingSpend ? <Loader2 className="animate-spin" size={18}/> : editingSpendId ? <Edit3 size={18}/> : <Plus size={18}/>}
-                    {editingSpendId ? "Update" : "Add Material"}
+                  <button onClick={handleSaveSpend} className="bg-slate-900 text-white p-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-all">
+                    {addingSpend ? <Loader2 className="animate-spin" size={16}/> : editingSpendId ? "UPDATE ITEM" : "ADD MATERIAL"}
                   </button>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {spends.map(s => (
-                    <div key={s.id} className="group flex justify-between items-center p-4 bg-red-50/50 rounded-2xl border border-red-100">
-                      <div><p className="font-bold text-slate-800 uppercase text-xs">{s.item}</p><p className="text-sm font-black text-red-600">₹{s.amount}</p></div>
-                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => {setEditingSpendId(s.id); setItemName(s.item); setItemAmount(s.amount.toString());}} className="text-slate-400 hover:text-blue-600"><Edit3 size={16}/></button>
-                        <button onClick={() => deleteSpend(s.id)} className="text-slate-400 hover:text-red-600"><Trash2 size={16}/></button>
+                    <div key={s.id} className="group flex justify-between items-center p-4 rounded-xl border border-slate-50 hover:bg-slate-50 transition-all">
+                      <div>
+                        <p className="font-bold text-slate-800 uppercase text-[11px] tracking-tight">{s.item}</p>
+                        <p className="text-sm font-bold text-slate-900">₹{s.amount.toLocaleString()}</p>
+                      </div>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => {setEditingSpendId(s.id); setItemName(s.item); setItemAmount(s.amount.toString());}} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><Edit3 size={16}/></button>
+                        <button onClick={() => deleteSpend(s.id)} className="p-2 text-slate-400 hover:text-red-600 transition-colors"><Trash2 size={16}/></button>
                       </div>
                     </div>
                   ))}
@@ -186,7 +230,7 @@ export default function ProjectDetail() {
               </div>
             </div>
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );
