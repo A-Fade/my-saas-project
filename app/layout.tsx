@@ -25,14 +25,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="bg-gray-100 antialiased">
+      <body className="antialiased bg-slate-100">
         <Toaster position="top-right" />
-        
-        {/* Isme koi extra Sidebar ya Topbar nahi hai */}
-        {/* Yeh sirf wahi dikhayega jo aapke pages (Dashboard, Projects) mein hai */}
-        <main>
-          {children}
-        </main>
+        {children}
       </body>
     </html>
   );
