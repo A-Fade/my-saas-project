@@ -3,6 +3,7 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { Lock, Mail, LayoutGrid, ArrowRight } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -23,7 +24,7 @@ export default function Login() {
     setLoading(false);
   }
 
-  // 🌐 GOOGLE LOGIN (ONE CLICK)
+  // 🌐 GOOGLE LOGIN
   async function handleGoogleLogin() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -35,48 +36,84 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-200">
+    <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-6 font-sans antialiased text-slate-900">
+      <div className="max-w-md w-full bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden transition-all hover:shadow-md">
         
-        <div className="bg-gradient-to-r from-blue-700 to-indigo-800 p-10 text-center text-white">
-          <h1 className="text-4xl font-black mb-2 tracking-tight">🏗️ Builder<span className="text-blue-300">Pro</span></h1>
-          <p className="text-blue-100 text-sm font-medium uppercase tracking-widest">Management System</p>
+        {/* Header - Minimalist Style */}
+        <div className="bg-slate-900 p-10 text-center text-white relative overflow-hidden">
+          <div className="relative z-10">
+             <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/10">
+                <LayoutGrid size={24} className="text-white" />
+             </div>
+             <h1 className="text-3xl font-bold tracking-tight">Builder<span className="text-slate-400">Pro</span></h1>
+             <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">Professional Portal</p>
+          </div>
+          {/* Subtle Background Pattern */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
         </div>
 
-        <div className="p-10">
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase ml-2 mb-2 block tracking-widest">Email Address</label>
-              <input type="email" className="w-full border-2 border-slate-50 bg-slate-50 p-4 rounded-2xl outline-none focus:border-blue-400 transition" placeholder="admin@builderpro.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            </div>
-
-            <div>
-              <div className="flex justify-between items-center mb-2 px-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Password</label>
-                <button type="button" className="text-[10px] font-black text-blue-600 uppercase hover:underline">Forgot Password?</button>
+        <div className="p-8 md:p-10">
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-slate-500 uppercase ml-1 tracking-wider">Work Email</label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input 
+                  type="email" 
+                  className="w-full border border-slate-200 bg-slate-50 p-4 pl-12 rounded-xl outline-none focus:bg-white focus:border-slate-900 transition-all text-sm" 
+                  placeholder="name@company.com" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  required 
+                />
               </div>
-              <input type="password" className="w-full border-2 border-slate-50 bg-slate-50 p-4 rounded-2xl outline-none focus:border-blue-400 transition" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
 
-            <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-xl hover:bg-blue-700 transition active:scale-95 disabled:opacity-50">
-              {loading ? "AUTHENTICATING..." : "LOG IN NOW"}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center mb-1 px-1">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Security Key</label>
+                <button type="button" className="text-[10px] font-bold text-slate-400 uppercase hover:text-slate-900 transition-colors">Recover</button>
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input 
+                  type="password" 
+                  className="w-full border border-slate-200 bg-slate-50 p-4 pl-12 rounded-xl outline-none focus:bg-white focus:border-slate-900 transition-all text-sm" 
+                  placeholder="••••••••" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  required 
+                />
+              </div>
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={loading} 
+              className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
+            >
+              {loading ? "VERIFYING..." : "ACCESS DASHBOARD"}
+              {!loading && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>
 
           {/* DIVIDER */}
           <div className="relative my-8 text-center">
             <hr className="border-slate-100" />
-            <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-[10px] font-black text-slate-400 uppercase">OR</span>
+            <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Enterprise Sign-in</span>
           </div>
 
           {/* GOOGLE LOGIN BUTTON */}
-          <button onClick={handleGoogleLogin} className="w-full bg-white border-2 border-slate-100 text-slate-700 py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-slate-50 transition active:scale-95">
-            <img src="https://svgrepo.com" className="w-5 h-5" alt="Google" />
-            Sign in with Google
+          <button 
+            onClick={handleGoogleLogin} 
+            className="w-full bg-white border border-slate-200 text-slate-700 py-4 rounded-xl font-bold flex items-center justify-center gap-3 hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-[0.98]"
+          >
+            <img src="https://gstatic.com" className="w-5 h-5" alt="Google" /> 
+            Sign in with Cloud Identity
           </button>
 
-          <p className="text-center text-slate-500 text-sm mt-8">
-            Don't have an account? <button onClick={() => router.push('/signup')} className="text-blue-600 font-bold hover:underline">Sign Up</button>
+          <p className="text-center text-slate-500 text-[13px] mt-10 font-medium">
+            New to the platform? <button onClick={() => router.push('/signup')} className="text-slate-900 font-bold hover:underline decoration-2 underline-offset-4">Create Account</button>
           </p>
         </div>
       </div>
