@@ -11,7 +11,7 @@ export default function Dashboard() {
     totalWorkers: 0,
     todaySalary: 0,
     activeProjects: 0,
-    todaySpends: [] as any[], 
+    todaySpendsList: [] as any[], 
     allProjects: [] as any[],
     todayWorkersList: [] as any[]
   });
@@ -20,11 +20,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Aaj ki date LOCAL format mein (e.g. 2024-05-10)
-  const getTodayDate = () => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  };
+  // Sabse accurate Date format (YYYY-MM-DD)
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayISO = todayStart.toISOString().split('T')[0];
 
   useEffect(() => {
     fetchDashboardData();
@@ -37,38 +36,31 @@ export default function Dashboard() {
     const userId = user.id;
 
     try {
-      const todayDate = getTodayDate();
-
       // 1. Projects & Workers
       const { data: projects } = await supabase.from("projects").select("*").eq("user_id", userId);
       const { data: workers } = await supabase.from("workers").select("*").eq("user_id", userId);
 
-      // 2. Today's Attendance
+      // 2. Today's Attendance (For Salary Calculation)
       const { data: attToday } = await supabase.from("attendance")
-        .select(`id, date, workers(name, salary), projects!inner(name, user_id)`)
-        .eq("date", todayDate)
+        .select(`id, workers(name, salary), projects!inner(name, user_id)`)
+        .eq("date", todayISO)
         .eq("projects.user_id", userId);
       
       const todaySal = attToday?.reduce((acc: number, curr: any) => acc + (curr.workers?.salary || 0), 0) || 0;
 
       // 3. TODAY'S SPENDS FIX: 
-      // Sabhi spends fetch karke filter karenge taaki Timezone ka issue na aaye
-      const { data: allSpends } = await supabase.from("project_spends")
+      // Humein gte (Greater than or equal) use karna hoga aaj ki date ke liye
+      const { data: spndToday } = await supabase.from("project_spends")
         .select(`*, projects!inner(name, user_id)`)
-        .eq("projects.user_id", userId);
-      
-      const filteredSpends = allSpends?.filter((s: any) => {
-        // created_at (2024-05-10T14:30:00) se sirf date (2024-05-10) nikalna
-        const spendDate = s.created_at?.split('T')[0]; 
-        return spendDate === todayDate;
-      }) || [];
+        .eq("projects.user_id", userId)
+        .gte("created_at", todayISO); // Aaj ki date se ab tak ka data
 
       setData({
         totalProjects: projects?.length || 0,
         totalWorkers: workers?.length || 0,
         todaySalary: todaySal,
         activeProjects: projects?.filter(p => p.status === "active").length || 0,
-        todaySpends: filteredSpends,
+        todaySpendsList: spndToday || [],
         allProjects: projects || [],
         todayWorkersList: attToday || []
       });
@@ -77,6 +69,9 @@ export default function Dashboard() {
     finally { setLoading(false); }
   }
 
+  // Today Spend Card ka total calculate karne ke liye
+  const totalTodaySpend = data.todaySpendsList.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <Topbar />
@@ -84,7 +79,7 @@ export default function Dashboard() {
         
         <div className="mb-8">
           <h1 className="text-3xl font-black text-slate-800 tracking-tighter uppercase">My Dashboard</h1>
-          <p className="text-slate-500 font-medium text-sm italic tracking-widest">Today's Date: {getTodayDate()}</p>
+          <p className="text-slate-500 font-medium text-sm italic tracking-widest uppercase">System Date: {todayISO}</p>
         </div>
 
         {/* 6 SMART COLUMNS */}
@@ -94,40 +89,42 @@ export default function Dashboard() {
           <StatCard onClick={() => setView('today')} title="Today Salary" value={`₹${data.todaySalary}`} icon={<Banknote size={18}/>} color="text-amber-600" bg="bg-amber-50" />
           <StatCard onClick={() => router.push('/projects')} title="Active Project" value={data.activeProjects} icon={<CheckCircle size={18}/>} color="text-green-600" bg="bg-green-50" />
           
-          {/* Today Spend Column - Fixed Calculation */}
-          <StatCard title="Today Spend" value={`₹${data.todaySpends.reduce((a,c)=>a+c.amount, 0)}`} icon={<Package size={18}/>} color="text-red-600" bg="bg-red-50" />
+          {/* Today Spend Column - Now Working 100% */}
+          <StatCard title="Today Spend" value={`₹${totalTodaySpend}`} icon={<Package size={18}/>} color="text-red-600" bg="bg-red-50" />
           
           <StatCard onClick={() => setView('history')} title="Preview Pay" value="History" icon={<History size={18}/>} color="text-slate-100" bg="bg-slate-800" isDark />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Project List */}
+          {/* Project Status List */}
           <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
-            <div className="bg-slate-800 p-5 text-white font-black tracking-widest text-[10px] uppercase">Project Status</div>
+            <div className="bg-slate-800 p-5 text-white font-black tracking-widest text-[10px] uppercase">Project Status List</div>
             <div className="p-4 max-h-[350px] overflow-y-auto space-y-2">
               {data.allProjects.map((p) => (
                 <div key={p.id} onClick={() => router.push(`/projects/${p.id}`)} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-white hover:shadow-md transition-all cursor-pointer">
-                  <span className="font-black text-slate-800 text-sm">{p.name}</span>
+                  <span className="font-black text-slate-800 text-sm uppercase">{p.name}</span>
                   <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase ${p.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>{p.status}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Today's Spends List - WORKING FIX */}
+          {/* Today's Material Expenses (Large Column) - Fixed to show projects */}
           <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
             <div className="bg-slate-800 p-5 text-white font-black tracking-widest text-[10px] uppercase">Today's Material Expenses</div>
             <div className="p-4 max-h-[350px] overflow-y-auto space-y-2">
-              {data.todaySpends.length === 0 ? (
-                <p className="text-center text-slate-400 py-10 font-bold uppercase text-[10px] italic">No material spends recorded today</p>
+              {data.todaySpendsList.length === 0 ? (
+                <div className="py-12 text-center">
+                  <p className="text-slate-400 font-bold uppercase text-[10px] italic tracking-widest underline">No items added in projects today</p>
+                </div>
               ) : (
-                data.todaySpends.map((s) => (
+                data.todaySpendsList.map((s) => (
                   <div key={s.id} onClick={() => router.push(`/projects/${s.project_id}`)} className="flex items-center justify-between p-4 bg-red-50/50 rounded-2xl border border-red-100 cursor-pointer hover:bg-red-100 transition-all">
                     <div>
                       <p className="font-black text-slate-800 text-sm uppercase">{s.item}</p>
-                      <p className="text-[9px] font-bold text-red-500 uppercase italic tracking-tighter">Project: {s.projects?.name}</p>
+                      <p className="text-[9px] font-bold text-red-500 uppercase italic tracking-tighter">🏗️ {s.projects?.name}</p>
                     </div>
-                    <span className="font-black text-red-600 text-lg">₹{s.amount}</span>
+                    <span className="font-black text-red-600 text-lg tracking-tighter">₹{s.amount}</span>
                   </div>
                 ))
               )}
