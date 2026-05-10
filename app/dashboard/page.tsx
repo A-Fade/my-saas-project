@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Topbar from "@/app/components/Topbar";
-import { Folder, Users, Banknote, Clock, History, CheckCircle, ChevronRight, X, Package } from "lucide-react";
+import { Folder, Users, Banknote, Clock, History, CheckCircle, ChevronRight, X, Phone, Building2 } from "lucide-react";
 
 export default function Dashboard() {
   const [data, setData] = useState({
@@ -11,16 +11,17 @@ export default function Dashboard() {
     totalWorkers: 0,
     todaySalary: 0,
     activeProjects: 0,
-    todaySpends: [] as any[],
+    pendingPayments: 0,
+    todayWorkersList: [] as any[],
     allProjects: [] as any[],
-    todayWorkersList: [] as any[]
+    todaySpends: [] as any[]
   });
   
   const [view, setView] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-
-  // Aaj ki date local format mein
+  
+  // Date handling
   const today = new Date();
   const todayDateString = today.toISOString().split('T')[0];
 
@@ -30,49 +31,63 @@ export default function Dashboard() {
 
   async function fetchDashboardData() {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { router.push("/login"); return; }
-    const userId = user.id;
-
     try {
-      // 1. Projects & Workers (Only for this User)
-      const { data: projects } = await supabase.from("projects").select("*").eq("user_id", userId);
-      const { data: workers } = await supabase.from("workers").select("*").eq("user_id", userId);
+      // 1. Authenticated User Check
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+      const userId = user.id;
 
-      // 2. Attendance/Today Salary
-      const { data: attToday } = await supabase.from("attendance")
-        .select(`id, workers(name, salary, phone), projects!inner(name, user_id)`)
+      // 2. Fetch Projects (User specific)
+      const { data: projects, error: projErr } = await supabase
+        .from("projects")
+        .select("*")
+        .eq("user_id", userId);
+
+      // 3. Fetch Workers (User specific)
+      const { data: workers } = await supabase
+        .from("workers")
+        .select("*")
+        .eq("user_id", userId);
+
+      // 4. Today's Attendance & Salary
+      const { data: attToday } = await supabase
+        .from("attendance")
+        .select(`id, date, workers!inner(name, phone, salary, user_id), projects!inner(name, user_id)`)
         .eq("date", todayDateString)
         .eq("projects.user_id", userId);
       
       const todaySal = attToday?.reduce((acc: number, curr: any) => acc + (curr.workers?.salary || 0), 0) || 0;
 
-      // 3. Today's Material Spends - FIX: Filtering by Date only
-      const { data: allSpends } = await supabase.from("project_spends")
+      // 5. Today's Material Spends
+      const { data: allSpends } = await supabase
+        .from("project_spends")
         .select(`*, projects!inner(name, user_id)`)
         .eq("projects.user_id", userId);
       
-      // Local time ke hisab se filter
-      const filteredSpends = allSpends?.filter((s: any) => {
-        const spendDate = new Date(s.created_at).toISOString().split('T')[0];
-        return spendDate === todayDateString;
-      }) || [];
+      const filteredSpends = allSpends?.filter((s: any) => s.created_at?.startsWith(todayDateString)) || [];
 
       setData({
         totalProjects: projects?.length || 0,
         totalWorkers: workers?.length || 0,
         todaySalary: todaySal,
         activeProjects: projects?.filter(p => p.status === "active").length || 0,
-        todaySpends: filteredSpends,
+        pendingPayments: 0, 
+        todayWorkersList: attToday || [],
         allProjects: projects || [],
-        todayWorkersList: attToday || []
+        todaySpends: filteredSpends
       });
 
-    } catch (err) { console.error(err); }
-    setLoading(false);
+    } catch (err) {
+      console.error("Dashboard Fetch Error:", err);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  if (loading) return <div className="h-screen flex items-center justify-center font-black text-slate-400">LOADING...</div>;
+  if (loading) return <div className="h-screen flex items-center justify-center font-black text-slate-300 animate-pulse">BUILDER PRO...</div>;
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
@@ -81,7 +96,7 @@ export default function Dashboard() {
         
         <div className="mb-8">
           <h1 className="text-3xl font-black text-slate-800 tracking-tighter uppercase">My Dashboard</h1>
-          <p className="text-slate-500 font-medium text-sm italic">Showing stats for {todayDateString}</p>
+          <p className="text-slate-500 font-medium text-sm italic">Stats for {todayDateString}</p>
         </div>
 
         {/* 6 SMART COLUMNS */}
@@ -96,25 +111,27 @@ export default function Dashboard() {
 
         {/* --- LARGE COLUMNS --- */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Project Status List */}
+          {/* Project List */}
           <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
             <div className="bg-slate-800 p-5 text-white flex justify-between items-center uppercase font-black tracking-widest text-[10px]">
               <span>Project Status</span>
             </div>
             <div className="p-4 max-h-[350px] overflow-y-auto space-y-2">
-              {data.allProjects.map((p) => (
-                <div key={p.id} onClick={() => router.push(`/projects/${p.id}`)} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-white hover:shadow-md transition-all cursor-pointer">
-                  <span className="font-black text-slate-800 text-sm">{p.name}</span>
-                  <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase ${p.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>{p.status}</span>
-                </div>
-              ))}
+              {data.allProjects.length === 0 ? <p className="text-center text-slate-400 py-6 italic uppercase text-[10px]">No projects found</p> : (
+                data.allProjects.map((p) => (
+                  <div key={p.id} onClick={() => router.push(`/projects/${p.id}`)} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-white hover:shadow-md transition-all cursor-pointer">
+                    <span className="font-black text-slate-800 text-sm">{p.name}</span>
+                    <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase ${p.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>{p.status}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
-          {/* Today's Spends List */}
+          {/* Material Spends */}
           <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
             <div className="bg-slate-800 p-5 text-white flex justify-between items-center uppercase font-black tracking-widest text-[10px]">
-              <span>Today's Material Spends</span>
+              <span>Today's Spends</span>
             </div>
             <div className="p-4 max-h-[350px] overflow-y-auto space-y-2">
               {data.todaySpends.length === 0 ? <p className="text-center text-slate-400 py-10 font-bold uppercase text-[10px]">No material spends today</p> : (
@@ -131,8 +148,6 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-
-        {/* View Popup logic remains same... */}
       </main>
     </div>
   );
