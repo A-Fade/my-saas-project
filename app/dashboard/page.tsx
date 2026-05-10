@@ -1,184 +1,131 @@
 "use client";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
+import Sidebar from "@/app/components/Sidebar";
 import Topbar from "@/app/components/Topbar";
-import StatsCard from "@/app/components/StatsCard";
-import {
-  XAxis,
-  Tooltip,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  CartesianGrid,
-} from "recharts";
+import { Users, FolderKanban, Wallet, TrendingUp, ArrowUpRight, Activity } from "lucide-react";
 
 export default function Dashboard() {
-  const [projects, setProjects] = useState<any[]>([]);
-  const [workers, setWorkers] = useState<any[]>([]);
-  const [payments, setPayments] = useState<any[]>([]);
+  const [stats, setStats] = useState({
+    totalProjects: 0,
+    todaySalary: 0,
+    activeWorkers: 0,
+    totalSpends: 0
+  });
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
-    checkUser();
+    fetchDashboardData();
   }, []);
 
-  async function checkUser() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-    // ✅ Pass user.id to fetch only personal data
-    await fetchData(user.id);
+  async function fetchDashboardData() {
+    setLoading(true);
+    const today = new Date().toISOString().split('T')[0];
+
+    // 1. Fetch Projects Count
+    const { count: projCount } = await supabase.from("projects").select("*", { count: 'exact', head: true });
+
+    // 2. Fetch Today's Attendance & Salary
+    // Note: We join with workers to get their daily salary rate
+    const { data: attendance } = await supabase
+      .from("attendance")
+      .select(`status, date, workers(salary)`)
+      .eq("date", today)
+      .eq("status", "present");
+
+    const todaySal = attendance?.reduce((acc: number, curr: any) => acc + (curr.workers?.salary || 0), 0) || 0;
+    const presentCount = attendance?.length || 0;
+
+    // 3. Fetch Total Material Spends
+    const { data: spends } = await supabase.from("project_spends").select("amount");
+    const totalSpnd = spends?.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0) || 0;
+
+    setStats({
+      totalProjects: projCount || 0,
+      todaySalary: todaySal,
+      activeWorkers: presentCount,
+      totalSpends: totalSpnd
+    });
     setLoading(false);
   }
 
-  // 📊 FETCH DATA (Strictly filtered by user_id)
-  async function fetchData(userId: string) {
-    const [pRes, wRes, payRes] = await Promise.all([
-      supabase.from("projects").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
-      supabase.from("workers").select("*").eq("user_id", userId),
-      supabase.from("payments").select("*").eq("user_id", userId),
-    ]);
-    
-    setProjects(pRes.data || []);
-    setWorkers(wRes.data || []);
-    setPayments(payRes.data || []);
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-100">
-        <p className="text-slate-700 text-lg font-semibold animate-pulse"> Loading Dashboard... </p>
-      </div>
-    );
-  }
-
-  // 💰 Calculate total salary from filtered payments
-  const totalSalary = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
-
-  // 📈 Chart Data
-  const chartData = payments.slice(-7).map((p, i) => ({
-    name: `Day ${i + 1}`,
-    amount: Number(p.amount || 0),
-  }));
-
   return (
-    <div className="bg-slate-100 min-h-screen">
-      <Topbar />
+    <div className="min-h-screen bg-slate-50 flex">
+      {/* Sidebar - Desktop Only */}
+      <div className="hidden md:block w-64 fixed h-full z-40">
+        <Sidebar />
+      </div>
 
-      <div className="max-w-7xl mx-auto p-4 md:p-6">
-        {/* STATS SECTION */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
-          <StatsCard 
-            title="Total Projects" 
-            value={projects.length} 
-            color="bg-gradient-to-br from-blue-600 to-blue-700 text-white" 
-            link="/projects" 
-          />
-          <StatsCard 
-            title="Total Workers" 
-            value={workers.length} 
-            color="bg-gradient-to-br from-emerald-600 to-emerald-700 text-white" 
-            link="/workers" 
-          />
-          <StatsCard 
-            title="Worker Salary" 
-            value={`₹${totalSalary.toLocaleString()}`} 
-            color="bg-gradient-to-br from-orange-500 to-orange-600 text-white" 
-            link="/payments" 
-          />
-          <StatsCard 
-            title="Active Projects" 
-            value={projects.filter((p) => p.status?.toLowerCase() === "active").length} 
-            color="bg-gradient-to-br from-violet-600 to-violet-700 text-white" 
-            link="/projects" 
-          />
-        </div>
-
-        {/* MAIN GRID */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* RECENT PROJECTS TABLE */}
-          <div className="xl:col-span-1 bg-white border border-slate-200 rounded-[2rem] shadow-sm p-6">
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <h2 className="text-2xl font-black text-slate-800 tracking-tight"> Recent Projects </h2>
-                <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mt-1"> Latest construction </p>
-              </div>
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl"> 📁 </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-slate-400 border-b border-slate-100">
-                    <th className="pb-3 font-black uppercase text-[10px]">Project</th>
-                    <th className="pb-3 font-black uppercase text-[10px]">Location</th>
-                    <th className="pb-3 font-black uppercase text-[10px]">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {projects.length > 0 ? (
-                    projects.slice(0, 5).map((p: any) => (
-                      <tr key={p.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition cursor-pointer" onClick={() => router.push(`/projects/${p.id}`)}>
-                        <td className="py-4 font-bold text-slate-700"> {p.name} </td>
-                        <td className="text-slate-500 font-medium"> {p.location} </td>
-                        <td>
-                          <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase ${p.status?.toLowerCase() === 'active' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                            {p.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={3} className="py-10 text-center text-slate-400 font-bold italic">No projects found</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+      <div className="flex-1 md:ml-64 flex flex-col">
+        <Topbar />
+        
+        <main className="p-4 md:p-8 max-w-7xl mx-auto w-full">
+          {/* Welcome Section */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-black text-slate-800 tracking-tight">System Overview</h1>
+            <p className="text-slate-500 font-medium">Real-time tracking of your construction business</p>
           </div>
 
-          {/* CHART AREA */}
-          <div className="xl:col-span-2 bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden">
-            <div className="p-8 border-b border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-black text-slate-800 tracking-tight"> Payment Analytics </h2>
-                <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mt-1"> Salary & expense overview </p>
+          {/* TOP 4 SMART CARDS */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            {/* Today's Labor Cost - THE SMART COLUMN */}
+            <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 hover:shadow-md transition-all relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-3 bg-amber-50 text-amber-600 rounded-bl-2xl">
+                <Activity size={20} />
               </div>
-              <div className="flex gap-3">
-                <div className="bg-slate-50 px-5 py-3 rounded-2xl border border-slate-100">
-                  <p className="text-[10px] font-black text-slate-400 uppercase"> Total Salary </p>
-                  <h3 className="text-xl font-black text-slate-800"> ₹{totalSalary.toLocaleString()} </h3>
-                </div>
+              <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-1">Today's Labor</p>
+              <h2 className="text-3xl font-black text-slate-800">₹{stats.todaySalary}</h2>
+              <div className="mt-4 flex items-center gap-2">
+                <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-1 rounded-lg font-black uppercase">
+                  {stats.activeWorkers} Workers Present
+                </span>
               </div>
             </div>
 
-            <div className="p-8">
-              {chartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={320}>
-                  <AreaChart data={chartData}>
-                    <defs>
-                      <linearGradient id="salaryGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 'bold' }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-                    <Area type="monotone" dataKey="amount" stroke="#2563eb" strokeWidth={4} fill="url(#salaryGradient)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-[320px] flex items-center justify-center text-slate-400 font-bold border-2 border-dashed rounded-3xl">No payment data to chart</div>
-              )}
+            {/* Total Projects */}
+            <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 hover:shadow-md transition-all relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-3 bg-blue-50 text-blue-600 rounded-bl-2xl">
+                <FolderKanban size={20} />
+              </div>
+              <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-1">Total Projects</p>
+              <h2 className="text-3xl font-black text-slate-800">{stats.totalProjects}</h2>
+              <p className="text-[10px] text-slate-400 mt-4 font-bold uppercase tracking-tight">Active Sites</p>
             </div>
+
+            {/* Material Expenditure */}
+            <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 hover:shadow-md transition-all relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-3 bg-red-50 text-red-600 rounded-bl-2xl">
+                <Wallet size={20} />
+              </div>
+              <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-1">Material Spent</p>
+              <h2 className="text-3xl font-black text-slate-800">₹{stats.totalSpends}</h2>
+              <p className="text-[10px] text-red-500 mt-4 font-bold uppercase tracking-tight flex items-center gap-1">
+                <TrendingUp size={12}/> Total Outflow
+              </p>
+            </div>
+
+            {/* Business Health (Visual Profit indicator) */}
+            <div className="bg-gradient-to-br from-blue-700 to-indigo-900 p-6 rounded-[2rem] shadow-lg text-white relative overflow-hidden">
+              <p className="text-blue-100 font-bold text-[10px] uppercase tracking-widest mb-1 opacity-80">System Status</p>
+              <h2 className="text-2xl font-black">Professional Mode</h2>
+              <div className="mt-4 flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-[10px] font-bold uppercase">All Systems Live</span>
+              </div>
+              <ArrowUpRight className="absolute bottom-4 right-4 opacity-20" size={60} />
+            </div>
+
           </div>
-        </div>
+
+          {/* Quick Actions or Summary Chart Placeholder */}
+          <div className="mt-12 bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm text-center">
+            <h3 className="text-xl font-bold text-slate-800 mb-2">Welcome to BuilderPro Analytics</h3>
+            <p className="text-slate-500 text-sm max-w-md mx-auto">
+              Aaj ki labor cost aur material expenses ka poora hisab yahan real-time update ho raha hai.
+            </p>
+          </div>
+        </main>
       </div>
     </div>
   );
