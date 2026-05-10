@@ -137,21 +137,28 @@ export default function ProjectDetail() {
             <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
               <div className="bg-slate-800 p-6 text-white flex items-center gap-2"><Receipt size={20}/><h3 className="font-bold">Material Expenditure</h3></div>
               <div className="p-6">
-                <div className="flex gap-2 mb-6 bg-slate-50 p-3 rounded-2xl border border-dashed">
-                  <input placeholder="Item" value={itemName} onChange={(e) => setItemName(e.target.value)} className="flex-1 bg-white border p-2 rounded-xl text-sm outline-none" />
-                  <input placeholder="Amt" type="number" value={itemAmount} onChange={(e) => setItemAmount(e.target.value)} className="w-24 bg-white border p-2 rounded-xl text-sm outline-none" />
-                  <button onClick={handleSaveSpend} className="bg-red-600 text-white p-2 px-4 rounded-xl hover:bg-red-700 transition">
-                    {addingSpend ? <Loader2 className="animate-spin" size={20}/> : editingSpendId ? <Edit3 size={20}/> : <Plus size={20}/>}
-                  </button>
-                  {editingSpendId && <button onClick={() => {setEditingSpendId(null); setItemName(""); setItemAmount("");}} className="bg-slate-200 p-2 rounded-xl"><X size={20}/></button>}
+                {/* RESPONSIVE FORM FIX */}
+                <div className="flex flex-col gap-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-dashed border-slate-300">
+                  <div className="flex flex-col md:flex-row gap-2">
+                    <input placeholder="Item (e.g. Cement)" value={itemName} onChange={(e) => setItemName(e.target.value)} className="flex-1 bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-500" />
+                    <input placeholder="Amount" type="number" value={itemAmount} onChange={(e) => setItemAmount(e.target.value)} className="w-full md:w-28 bg-white border border-slate-200 p-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-500" />
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={handleSaveSpend} className="flex-1 bg-red-600 text-white p-3 rounded-xl hover:bg-red-700 transition flex items-center justify-center gap-2 font-bold shadow-md active:scale-95">
+                      {addingSpend ? <Loader2 className="animate-spin" size={20}/> : editingSpendId ? <Edit3 size={20}/> : <Plus size={20}/>}
+                      <span>{editingSpendId ? "Update" : "Add Item"}</span>
+                    </button>
+                    {editingSpendId && <button onClick={() => {setEditingSpendId(null); setItemName(""); setItemAmount("");}} className="bg-slate-200 p-3 rounded-xl text-slate-600 hover:bg-slate-300 transition"><X size={20}/></button>}
+                  </div>
                 </div>
+
                 <div className="space-y-3">
                   {spends.map(s => (
                     <div key={s.id} className="group flex justify-between items-center p-4 bg-red-50/50 rounded-2xl border border-red-100 transition-all">
                       <div><p className="font-bold text-slate-800">{s.item}</p><p className="text-sm font-black text-red-600">₹{s.amount}</p></div>
-                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => {setEditingSpendId(s.id); setItemName(s.item); setItemAmount(s.amount.toString());}} className="text-slate-400 hover:text-blue-600"><Edit3 size={18}/></button>
-                        <button onClick={() => deleteSpend(s.id)} className="text-slate-400 hover:text-red-600"><Trash2 size={18}/></button>
+                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 md:opacity-100 transition-opacity">
+                        <button onClick={() => {setEditingSpendId(s.id); setItemName(s.item); setItemAmount(s.amount.toString());}} className="text-slate-400 hover:text-blue-600 p-1"><Edit3 size={18}/></button>
+                        <button onClick={() => deleteSpend(s.id)} className="text-slate-400 hover:text-red-600 p-1"><Trash2 size={18}/></button>
                       </div>
                     </div>
                   ))}
