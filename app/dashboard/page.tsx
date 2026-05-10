@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Topbar from "@/app/components/Topbar";
-import { Folder, Users, Banknote, Clock, History, CheckCircle, ChevronRight, X, Package } from "lucide-react";
+import { Folder, Users, Banknote, History, CheckCircle, ChevronRight, X, Package, Clock } from "lucide-react";
 
 export default function Dashboard() {
   const [data, setData] = useState({
@@ -13,17 +13,11 @@ export default function Dashboard() {
     activeProjects: 0,
     todaySpendsList: [] as any[], 
     allProjects: [] as any[],
-    todayWorkersList: [] as any[]
   });
   
   const [view, setView] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-
-  // Sabse accurate Date format (YYYY-MM-DD)
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const todayISO = todayStart.toISOString().split('T')[0];
 
   useEffect(() => {
     fetchDashboardData();
@@ -36,24 +30,32 @@ export default function Dashboard() {
     const userId = user.id;
 
     try {
-      // 1. Projects & Workers
+      // 1. Projects & Workers (User Specific)
       const { data: projects } = await supabase.from("projects").select("*").eq("user_id", userId);
       const { data: workers } = await supabase.from("workers").select("*").eq("user_id", userId);
 
-      // 2. Today's Attendance (For Salary Calculation)
+      // 2. Today's Date calculation for local timezone
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      const endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999);
+
+      // 3. Today's Attendance & Salary
+      const todayISO = new Date().toISOString().split('T')[0];
       const { data: attToday } = await supabase.from("attendance")
-        .select(`id, workers(name, salary), projects!inner(name, user_id)`)
+        .select(`id, workers(salary), projects!inner(user_id)`)
         .eq("date", todayISO)
         .eq("projects.user_id", userId);
       
       const todaySal = attToday?.reduce((acc: number, curr: any) => acc + (curr.workers?.salary || 0), 0) || 0;
 
-      // 3. TODAY'S SPENDS FIX: 
-      // Humein gte (Greater than or equal) use karna hoga aaj ki date ke liye
+      // 4. TODAY'S SPENDS (FIXED LOGIC)
+      // Hum direct ISO range use kar rahe hain taaki exact 24 ghante ka data mile
       const { data: spndToday } = await supabase.from("project_spends")
         .select(`*, projects!inner(name, user_id)`)
         .eq("projects.user_id", userId)
-        .gte("created_at", todayISO); // Aaj ki date se ab tak ka data
+        .gte("created_at", startOfToday.toISOString())
+        .lte("created_at", endOfToday.toISOString());
 
       setData({
         totalProjects: projects?.length || 0,
@@ -62,24 +64,21 @@ export default function Dashboard() {
         activeProjects: projects?.filter(p => p.status === "active").length || 0,
         todaySpendsList: spndToday || [],
         allProjects: projects || [],
-        todayWorkersList: attToday || []
       });
 
     } catch (err) { console.error("Fetch Error:", err); }
     finally { setLoading(false); }
   }
 
-  // Today Spend Card ka total calculate karne ke liye
   const totalTodaySpend = data.todaySpendsList.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <Topbar />
       <main className="p-4 md:p-8 max-w-7xl mx-auto w-full">
-        
         <div className="mb-8">
           <h1 className="text-3xl font-black text-slate-800 tracking-tighter uppercase">My Dashboard</h1>
-          <p className="text-slate-500 font-medium text-sm italic tracking-widest uppercase">System Date: {todayISO}</p>
+          <p className="text-slate-500 font-medium text-sm italic tracking-widest uppercase">Live Business Stats</p>
         </div>
 
         {/* 6 SMART COLUMNS */}
@@ -89,7 +88,7 @@ export default function Dashboard() {
           <StatCard onClick={() => setView('today')} title="Today Salary" value={`₹${data.todaySalary}`} icon={<Banknote size={18}/>} color="text-amber-600" bg="bg-amber-50" />
           <StatCard onClick={() => router.push('/projects')} title="Active Project" value={data.activeProjects} icon={<CheckCircle size={18}/>} color="text-green-600" bg="bg-green-50" />
           
-          {/* Today Spend Column - Now Working 100% */}
+          {/* Today Spend Column - Now Working with Timezone Fix */}
           <StatCard title="Today Spend" value={`₹${totalTodaySpend}`} icon={<Package size={18}/>} color="text-red-600" bg="bg-red-50" />
           
           <StatCard onClick={() => setView('history')} title="Preview Pay" value="History" icon={<History size={18}/>} color="text-slate-100" bg="bg-slate-800" isDark />
@@ -100,7 +99,8 @@ export default function Dashboard() {
           <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
             <div className="bg-slate-800 p-5 text-white font-black tracking-widest text-[10px] uppercase">Project Status List</div>
             <div className="p-4 max-h-[350px] overflow-y-auto space-y-2">
-              {data.allProjects.map((p) => (
+              {data.allProjects.length === 0 ? <p className="text-center py-6 text-slate-400 text-xs">No projects found.</p> : 
+                data.allProjects.map((p) => (
                 <div key={p.id} onClick={() => router.push(`/projects/${p.id}`)} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-white hover:shadow-md transition-all cursor-pointer">
                   <span className="font-black text-slate-800 text-sm uppercase">{p.name}</span>
                   <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase ${p.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>{p.status}</span>
@@ -109,20 +109,18 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Today's Material Expenses (Large Column) - Fixed to show projects */}
+          {/* Today's Material Expenses (Project Mapping Fixed) */}
           <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
             <div className="bg-slate-800 p-5 text-white font-black tracking-widest text-[10px] uppercase">Today's Material Expenses</div>
             <div className="p-4 max-h-[350px] overflow-y-auto space-y-2">
               {data.todaySpendsList.length === 0 ? (
-                <div className="py-12 text-center">
-                  <p className="text-slate-400 font-bold uppercase text-[10px] italic tracking-widest underline">No items added in projects today</p>
-                </div>
+                <div className="py-12 text-center text-slate-400 font-bold uppercase text-[10px] italic">No material spends recorded today</div>
               ) : (
                 data.todaySpendsList.map((s) => (
                   <div key={s.id} onClick={() => router.push(`/projects/${s.project_id}`)} className="flex items-center justify-between p-4 bg-red-50/50 rounded-2xl border border-red-100 cursor-pointer hover:bg-red-100 transition-all">
                     <div>
                       <p className="font-black text-slate-800 text-sm uppercase">{s.item}</p>
-                      <p className="text-[9px] font-bold text-red-500 uppercase italic tracking-tighter">🏗️ {s.projects?.name}</p>
+                      <p className="text-[9px] font-bold text-red-500 uppercase tracking-tighter italic">Project: {s.projects?.name}</p>
                     </div>
                     <span className="font-black text-red-600 text-lg tracking-tighter">₹{s.amount}</span>
                   </div>
