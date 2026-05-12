@@ -3,113 +3,135 @@
 import React, { useState } from 'react';
 
 export default function BuilderProLanding() {
-  const [openIndex, setOpenIndex] = useState(-1);
+  const [openFaq, setOpenFaq] = useState(-1);
 
-  const faqData = [
-    { q: "BuilderPro use karne ke liye kya fees hai?", a: "Humara starter plan contractors ke liye free hai." },
-    { q: "Kya mera data safe hai?", a: "Ji haan, hum Supabase ka secure database use karte hain." },
-    { q: "Mobile par kaise chalega?", a: "Aap browser mein login karein, yeh automatically mobile ke hisab se set ho jata hai." }
+  // SEO Optimized Content Array
+  const features = [
+    { title: "Worker Attendance", desc: "Digital muster roll. Ek click mein workers ki attendance aur daily wages track karein.", icon: "👷‍♂️" },
+    { title: "Expense Tracking", desc: "Site par hone wale har ek rupaye ka hisab. Cement, saria se lekar chai tak ka kharcha.", icon: "💸" },
+    { title: "Live Site Reports", desc: "Client ko dikhane ke liye professional PDF reports aur progress photos.", icon: "📊" }
+  ];
+
+  const steps = [
+    { n: "01", t: "Setup Project", d: "Apni site ka naam aur location dalkar naya project shuru karein." },
+    { n: "02", t: "Add Team", d: "Apne workers aur supervisors ko system mein register karein." },
+    { n: "03", t: "Monitor & Grow", d: "Dashboard par analytics dekhein aur apne profit ko badhayein." }
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-blue-100">
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-600 selection:text-white">
       
-      {/* NAVBAR */}
-      <nav className="fixed w-full bg-white/90 backdrop-blur-md z-50 border-b border-slate-200 h-16 flex items-center px-6 justify-between">
+      {/* --- HEADER --- */}
+      <nav className="fixed w-full bg-white/90 backdrop-blur-md z-50 border-b border-slate-100 h-20 flex items-center justify-between px-6 md:px-12">
         <div className="flex items-center gap-2">
-          <div className="bg-blue-700 text-white p-1.5 rounded-lg font-bold">BP</div>
-          <span className="text-xl font-bold tracking-tighter">Builder<span className="text-blue-700 font-black">Pro</span></span>
+          <div className="w-10 h-10 bg-blue-700 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-200">B</div>
+          <span className="text-2xl font-bold tracking-tighter text-slate-800">Builder<span className="text-blue-700">Pro</span></span>
         </div>
-        <button className="bg-blue-700 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg shadow-blue-200">
-          Get Started
+        <div className="hidden md:flex gap-10 font-bold text-sm uppercase tracking-widest text-slate-500">
+          <a href="#features" className="hover:text-blue-700 transition">Features</a>
+          <a href="#how" className="hover:text-blue-700 transition">Process</a>
+          <a href="#faq" className="hover:text-blue-700 transition">Support</a>
+        </div>
+        <button className="bg-blue-700 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-800 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-blue-100">
+          Try Now
         </button>
       </nav>
 
-      {/* HERO SECTION */}
-      <header className="pt-32 pb-20 px-6 text-center">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight tracking-tight">
-            Construction <br/>
-            <span className="text-blue-700 italic font-black">Smart Management</span>
+      {/* --- HERO SECTION --- */}
+      <header className="pt-40 pb-24 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col items-center text-center">
+          <div className="bg-blue-50 text-blue-700 px-6 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-8 animate-bounce">
+            #1 Construction Management SaaS
+          </div>
+          <h1 className="text-5xl md:text-8xl font-black leading-[0.9] tracking-tighter mb-8">
+            Manage Sites <br />
+            <span className="text-blue-700">Without Stress.</span>
           </h1>
-          <p className="text-slate-500 text-lg mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
-            Project, Workers aur Payments ka pura hisab ab aapki ungliyon par. 
-            Builder ke liye banaya gaya sabse simple tool.
+          <p className="text-slate-500 text-lg md:text-2xl max-w-3xl mb-12 font-medium leading-relaxed">
+            Diary aur registers chhodiye. BuilderPro ke saath apne construction business ko automate karein aur har site ka profit real-time mein track karein.
           </p>
-
-          {/* DASHBOARD PREVIEW */}
-          <div className="relative mt-12 max-w-5xl mx-auto">
-            <div className="rounded-3xl shadow-2xl border-[10px] border-slate-900 bg-white overflow-hidden aspect-video">
+          
+          {/* Main Visual with Mobile/Desktop Overlap */}
+          <div className="relative w-full max-w-6xl mt-10 group">
+            <div className="bg-slate-900 rounded-[2.5rem] p-4 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] border border-slate-800 overflow-hidden aspect-video">
               <img 
                 src="/desktop-preview.png" 
-                alt="Desktop Dashboard" 
-                className="w-full h-full object-cover"
-                // FIXED: Direct inline logic to avoid "unused variable" red lines
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = "https://placeholder.com";
-                }} 
+                alt="BuilderPro Dashboard Desktop" 
+                className="w-full h-full object-cover rounded-2xl opacity-90 group-hover:opacity-100 transition"
+                onError={(e) => { e.currentTarget.src = "https://placeholder.com" }}
               />
             </div>
-            <div className="absolute -bottom-10 -right-4 w-32 md:w-60 aspect-[9/19] bg-white rounded-[2.5rem] border-[6px] border-slate-900 shadow-2xl overflow-hidden hidden sm:block">
-              <img 
-                src="/mobile-preview.png" 
-                alt="Mobile View" 
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = "https://placeholder.com";
-                }} 
-              />
+            {/* Mobile View Floating */}
+            <div className="absolute -bottom-10 -right-4 md:right-10 w-32 md:w-64 bg-slate-900 rounded-[2.5rem] p-2 md:p-3 border-4 border-slate-800 shadow-2xl hidden sm:block">
+              <div className="aspect-[9/19] rounded-2xl overflow-hidden">
+                <img 
+                  src="/mobile-preview.png" 
+                  alt="BuilderPro Mobile App" 
+                  className="w-full h-full object-cover"
+                  onError={(e) => { e.currentTarget.src = "https://placeholder.com" }}
+                />
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* HOW IT WORKS */}
-      <section className="py-24 bg-blue-700 text-white px-6">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-black text-center mb-16 uppercase tracking-widest">Process</h2>
-          <div className="grid md:grid-cols-3 gap-12 text-center">
-            <div>
-              <div className="text-5xl mb-4 font-black opacity-40">01</div>
-              <h3 className="text-xl font-bold mb-2">Register</h3>
-              <p className="text-blue-100 text-sm">Secure login karke apna builder profile setup karein.</p>
-            </div>
-            <div>
-              <div className="text-5xl mb-4 font-black opacity-40">02</div>
-              <h3 className="text-xl font-bold mb-2">Data Entry</h3>
-              <p className="text-blue-100 text-sm">Projects aur workers ki details ek hi baar add karein.</p>
-            </div>
-            <div>
-              <div className="text-5xl mb-4 font-black opacity-40">03</div>
-              <h3 className="text-xl font-bold mb-2">Monitor</h3>
-              <p className="text-blue-100 text-sm">Payments aur site reports hamesha mobile par track karein.</p>
-            </div>
+      {/* --- FEATURES --- */}
+      <section id="features" className="py-32 bg-slate-50 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-4 text-slate-900 uppercase">Aapka Digital Sathi</h2>
+            <p className="text-slate-500 font-bold">Har wo cheez jo ek contractor ko chahiye.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {features.map((f, i) => (
+              <div key={i} className="bg-white p-12 rounded-[3rem] border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
+                <div className="text-6xl mb-8">{f.icon}</div>
+                <h3 className="text-2xl font-black mb-4 text-slate-800">{f.title}</h3>
+                <p className="text-slate-500 leading-relaxed font-medium">{f.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* FAQ SECTION */}
-      <section className="py-24 px-6 bg-[#F8FAFC]">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-extrabold text-center mb-12 tracking-tight uppercase">FAQs</h2>
+      {/* --- HOW IT WORKS --- */}
+      <section id="how" className="py-32 bg-blue-700 text-white px-6">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl md:text-6xl font-black text-center mb-24 tracking-tighter uppercase italic">Easy 3 Step Process</h2>
+          <div className="grid md:grid-cols-3 gap-16 relative">
+            {steps.map((s, i) => (
+              <div key={i} className="relative flex flex-col items-center text-center">
+                <span className="text-8xl font-black opacity-20 mb-4">{s.n}</span>
+                <h3 className="text-2xl font-bold mb-4">{s.t}</h3>
+                <p className="text-blue-100 leading-relaxed max-w-xs font-medium">{s.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --- FAQ --- */}
+      <section id="faq" className="py-32 px-6">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-4xl font-black text-center mb-16 tracking-tight uppercase">Common Doubts</h2>
           <div className="space-y-4">
-            {faqData.map((f, i) => (
-              <div key={i} className="border border-slate-200 rounded-2xl bg-white shadow-sm overflow-hidden">
+            {[
+              { q: "क्या यह टूल फ्री है?", a: "जी हाँ! BuilderPro का बेसिक प्लान नए कॉन्ट्रैक्टर्स के लिए फ्री है।" },
+              { q: "क्या मेरा डेटा सुरक्षित है?", a: "हमारा पूरा सिस्टम Supabase पर चलता है जो बैंक-लेवल सिक्योरिटी देता है।" },
+              { q: "क्या इसमें ऑफलाइन काम कर सकते हैं?", a: "अभी के लिए इंटरनेट ज़रूरी है, पर हम जल्द ही ऑफलाइन मोड ला रहे हैं।" }
+            ].map((item, index) => (
+              <div key={index} className="border-2 border-slate-100 rounded-[2rem] overflow-hidden transition-all duration-300">
                 <button 
-                  type="button"
-                  onClick={() => setOpenIndex(openIndex === i ? -1 : i)}
-                  className="w-full p-6 text-left font-bold flex justify-between items-center hover:bg-slate-50 transition-colors"
+                  onClick={() => setOpenFaq(openFaq === index ? -1 : index)}
+                  className="w-full p-8 text-left font-black flex justify-between items-center text-lg md:text-xl text-slate-800 hover:bg-slate-50"
                 >
-                  <span className="text-slate-800">{f.q}</span>
-                  <span className="text-blue-700 font-black text-2xl">
-                    {openIndex === i ? '−' : '+'}
-                  </span>
+                  {item.q}
+                  <span className={`text-blue-700 transition-transform duration-300 ${openFaq === index ? 'rotate-180' : ''}`}>▼</span>
                 </button>
-                {openIndex === i && (
-                  <div className="p-6 border-t border-slate-100 text-slate-600 bg-slate-50 leading-relaxed font-medium">
-                    {f.a}
+                {openFaq === index && (
+                  <div className="p-8 pt-0 text-slate-500 font-bold leading-relaxed bg-slate-50/50 italic">
+                    {item.a}
                   </div>
                 )}
               </div>
@@ -118,10 +140,22 @@ export default function BuilderProLanding() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="py-12 border-t border-slate-200 text-center bg-white">
-        <p className="text-slate-800 font-bold mb-1">BuilderPro © 2024</p>
-        <p className="text-slate-400 text-[10px] tracking-[0.2em] font-black uppercase italic">Efficiency On Site</p>
+      {/* --- FOOTER --- */}
+      <footer className="py-20 border-t border-slate-100 bg-white px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
+          <div className="text-center md:text-left">
+            <h2 className="text-3xl font-black text-slate-800 mb-2 tracking-tighter">BuilderPro</h2>
+            <p className="text-slate-400 font-bold tracking-widest text-[10px] uppercase">Crafted for Indian Contractors</p>
+          </div>
+          <div className="flex gap-8 text-slate-500 font-black text-xs uppercase">
+            <a href="#" className="hover:text-blue-700">Privacy</a>
+            <a href="#" className="hover:text-blue-700">Terms</a>
+            <a href="#" className="hover:text-blue-700">Support</a>
+          </div>
+        </div>
+        <div className="text-center mt-20 text-slate-300 text-[10px] font-black uppercase tracking-[0.5em]">
+          BuilderPro SaaS © 2024
+        </div>
       </footer>
 
     </div>
