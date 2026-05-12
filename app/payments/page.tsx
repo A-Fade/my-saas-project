@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Topbar from "@/app/components/Topbar";
 import Sidebar from "@/app/components/Sidebar";
-import { Banknote, Users, Briefcase, Plus, Wallet, ArrowRight, Clock } from "lucide-react";
+import { Banknote, Users, Briefcase, Plus, Wallet, ArrowRight, Clock, Edit3, Trash2 } from "lucide-react";
 
 export default function Payments() {
   const [payments, setPayments] = useState<any[]>([]);
@@ -14,6 +14,7 @@ export default function Payments() {
   const [amount, setAmount] = useState("");
   const [workerId, setWorkerId] = useState("");
   const [projectId, setProjectId] = useState("");
+  const [editingId, setEditingId] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const router = useRouter();
@@ -37,10 +38,8 @@ export default function Payments() {
       .select(`id, amount, worker_id, project_id, workers:worker_id (name), projects:project_id (name)`)
       .eq("user_id", userId)
       .order("id", { ascending: false });
-
     const { data: wData } = await supabase.from("workers").select("*").eq("user_id", userId);
     const { data: pData } = await supabase.from("projects").select("*").eq("user_id", userId);
-
     setPayments(payData || []);
     setWorkers(wData || []);
     setProjects(pData || []);
@@ -54,25 +53,49 @@ export default function Payments() {
       return;
     }
     setSaving(true);
-    const payload = { 
-      amount: Number(amount), 
-      worker_id: workerId, 
-      project_id: projectId, 
-      user_id: user.id 
-    };
-
-    const { error } = await supabase.from("payments").insert([payload]);
-
-    if (error) {
-      toast.error(error.message);
+    const payload = { amount: Number(amount), worker_id: workerId, project_id: projectId, user_id: user.id };
+    
+    if (editingId) {
+      const { error } = await supabase.from("payments").update(payload).eq("id", editingId);
+      if (error) toast.error(error.message);
+      else toast.success("Payment updated");
     } else {
-      toast.success("Payment successful");
-      setAmount("");
-      setWorkerId("");
-      setProjectId("");
+      const { error } = await supabase.from("payments").insert([payload]);
+      if (error) toast.error(error.message);
+      else toast.success("Payment successful");
+    }
+
+    resetForm();
+    fetchAll(user.id);
+    setSaving(false);
+  }
+
+  async function handleDelete(id: any) {
+    if (!confirm("Are you sure you want to delete this payment?")) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase.from("payments").delete().eq("id", id);
+    if (error) toast.error("Delete failed");
+    else {
+      toast.success("Payment deleted");
       fetchAll(user.id);
     }
-    setSaving(false);
+  }
+
+  function handleEdit(p: any) {
+    setEditingId(p.id);
+    setAmount(String(p.amount));
+    setWorkerId(String(p.worker_id));
+    setProjectId(String(p.project_id));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function resetForm() {
+    setAmount("");
+    setWorkerId("");
+    setProjectId("");
+    setEditingId(null);
   }
 
   const totalPayments = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
@@ -88,12 +111,9 @@ export default function Payments() {
       <div className="hidden md:block w-64 fixed left-0 top-0 h-screen z-40 border-r border-slate-200">
         <Sidebar />
       </div>
-
       <div className="flex-1 md:ml-64 flex flex-col">
         <Topbar />
-        
         <main className="p-6 md:p-12 max-w-7xl mx-auto w-full">
-          {/* Header */}
           <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-slate-900">Payments</h1>
@@ -110,32 +130,20 @@ export default function Payments() {
             </div>
           </div>
 
-          {/* New Payment Form */}
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-12">
             <div className="px-8 py-5 bg-slate-50/50 border-b border-slate-100 flex items-center gap-2 text-slate-700">
               <Plus size={16} />
-              <h2 className="text-sm font-bold uppercase tracking-wider">Create Payment Transaction</h2>
+              <h2 className="text-sm font-bold uppercase tracking-wider">{editingId ? "Edit Transaction" : "Create Payment Transaction"}</h2>
             </div>
-            
             <div className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold uppercase text-slate-400 ml-1">Payment Amount (₹)</label>
-                  <input 
-                    type="number" 
-                    className="w-full bg-slate-50 border border-slate-100 p-4 rounded-xl outline-none focus:bg-white focus:border-slate-900 transition-all font-bold" 
-                    placeholder="0.00" 
-                    value={amount} 
-                    onChange={(e) => setAmount(e.target.value)} 
-                  />
+                  <input type="number" className="w-full bg-slate-50 border border-slate-100 p-4 rounded-xl outline-none focus:bg-white focus:border-slate-900 transition-all font-bold" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold uppercase text-slate-400 ml-1">Assign to Worker</label>
-                  <select 
-                    className="w-full bg-slate-50 border border-slate-100 p-4 rounded-xl outline-none focus:bg-white focus:border-slate-900 appearance-none font-medium" 
-                    value={workerId} 
-                    onChange={(e) => setWorkerId(e.target.value)}
-                  >
+                  <select className="w-full bg-slate-50 border border-slate-100 p-4 rounded-xl outline-none focus:bg-white focus:border-slate-900 appearance-none font-medium" value={workerId} onChange={(e) => setWorkerId(e.target.value)} >
                     <option value="">Select Staff Member</option>
                     {workers.map((w: any) => (
                       <option key={w.id} value={String(w.id)}>{w.name}</option>
@@ -144,11 +152,7 @@ export default function Payments() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold uppercase text-slate-400 ml-1">Associated Project</label>
-                  <select 
-                    className="w-full bg-slate-50 border border-slate-100 p-4 rounded-xl outline-none focus:bg-white focus:border-slate-900 appearance-none font-medium" 
-                    value={projectId} 
-                    onChange={(e) => setProjectId(e.target.value)}
-                  >
+                  <select className="w-full bg-slate-50 border border-slate-100 p-4 rounded-xl outline-none focus:bg-white focus:border-slate-900 appearance-none font-medium" value={projectId} onChange={(e) => setProjectId(e.target.value)} >
                     <option value="">Select Site</option>
                     {projects.map((p: any) => (
                       <option key={p.id} value={String(p.id)}>{p.name}</option>
@@ -156,18 +160,18 @@ export default function Payments() {
                   </select>
                 </div>
               </div>
-              <button 
-                onClick={handleSave} 
-                disabled={saving} 
-                className="bg-slate-900 text-white px-10 py-4 rounded-xl font-bold hover:bg-slate-800 transition-all disabled:opacity-50 flex items-center justify-center gap-2 group"
-              >
-                {saving ? "PROCESSING..." : "CONFIRM & SEND PAYMENT"}
-                {!saving && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
-              </button>
+              <div className="flex gap-4">
+                <button onClick={handleSave} disabled={saving} className="bg-slate-900 text-white px-10 py-4 rounded-xl font-bold hover:bg-slate-800 transition-all disabled:opacity-50 flex items-center justify-center gap-2 group" >
+                  {saving ? "PROCESSING..." : editingId ? "UPDATE PAYMENT" : "CONFIRM & SEND PAYMENT"}
+                  {!saving && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
+                </button>
+                {editingId && (
+                  <button onClick={resetForm} className="px-10 py-4 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50">Cancel</button>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Payments History List */}
           <div className="mb-6 flex items-center gap-2">
             <Clock size={20} className="text-slate-400" />
             <h2 className="text-xl font-bold text-slate-800">Transaction History</h2>
@@ -175,7 +179,7 @@ export default function Payments() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {payments.length === 0 ? (
-               <p className="text-center py-10 text-slate-400 font-bold uppercase text-xs tracking-widest col-span-full">No payments found</p>
+              <p className="text-center py-10 text-slate-400 font-bold uppercase text-xs tracking-widest col-span-full">No payments found</p>
             ) : (
               payments.map((p: any) => (
                 <div key={p.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md transition-all group">
@@ -188,10 +192,9 @@ export default function Payments() {
                       <Banknote size={20}/>
                     </div>
                   </div>
-
-                  <div className="space-y-4">
+                  <div className="space-y-4 mb-6">
                     <div className="flex items-center gap-3">
-                      <div className="bg-slate-50 p-2 rounded-lg text-slate-400 group-hover:text-slate-600">
+                      <div className="bg-slate-50 p-2 rounded-lg text-slate-400">
                         <Users size={14}/>
                       </div>
                       <div>
@@ -199,9 +202,8 @@ export default function Payments() {
                         <p className="font-bold text-slate-700 text-sm">{p.workers?.name || "Deleted Staff"}</p>
                       </div>
                     </div>
-
                     <div className="flex items-center gap-3">
-                      <div className="bg-slate-50 p-2 rounded-lg text-slate-400 group-hover:text-slate-600">
+                      <div className="bg-slate-50 p-2 rounded-lg text-slate-400">
                         <Briefcase size={14}/>
                       </div>
                       <div>
@@ -209,6 +211,15 @@ export default function Payments() {
                         <p className="font-bold text-slate-700 text-sm">{p.projects?.name || "Closed Project"}</p>
                       </div>
                     </div>
+                  </div>
+                  {/* ACTIONS */}
+                  <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100">
+                    <button onClick={() => handleEdit(p)} className="flex items-center justify-center gap-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-900 hover:text-white transition-all">
+                      <Edit3 size={14}/> Edit
+                    </button>
+                    <button onClick={() => handleDelete(p.id)} className="flex items-center justify-center gap-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 hover:border-red-100 transition-all">
+                      <Trash2 size={14}/> Delete
+                    </button>
                   </div>
                 </div>
               ))
