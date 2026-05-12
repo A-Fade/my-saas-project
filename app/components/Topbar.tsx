@@ -8,6 +8,7 @@ import Link from "next/link";
 export default function Topbar() {
   const [email, setEmail] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showEmailTooltip, setShowEmailTooltip] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -25,6 +26,9 @@ export default function Topbar() {
     await supabase.auth.signOut();
     router.push("/login");
   }
+
+  // Email ka pehla letter nikalne ke liye
+  const firstLetter = email ? email.charAt(0).toUpperCase() : "?";
 
   return (
     <div className="relative bg-white border-b border-slate-200 px-4 md:px-6 py-4 flex items-center justify-between z-50">
@@ -45,15 +49,29 @@ export default function Topbar() {
       </div>
 
       <div className="flex items-center gap-4">
-        {/* User Info Section - CHANGED TO hidden md:flex */}
-        <div className="hidden md:flex items-center gap-3 bg-slate-50 px-3 md:px-4 py-2 rounded-2xl border border-slate-100">
-          <div>
+        {/* User Info Section */}
+        <div className="relative flex items-center gap-3 bg-slate-50 px-2 md:px-4 py-2 rounded-2xl border border-slate-100">
+          {/* Desktop Text */}
+          <div className="hidden md:block text-right">
             <p className="text-sm font-semibold text-slate-700"> {email} </p>
-            <p className="text-xs text-slate-500 text-right"> Admin </p>
+            <p className="text-xs text-slate-500"> Admin </p>
           </div>
-          <div className="bg-blue-100 text-blue-600 p-2 rounded-full">
-            <Mail size={20} />
-          </div>
+
+          {/* Mobile/Desktop Avatar Circle */}
+          <button 
+            onClick={() => setShowEmailTooltip(!showEmailTooltip)}
+            className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-sm active:scale-95 transition-all"
+          >
+            {firstLetter}
+          </button>
+
+          {/* Mobile View Tooltip/Popup */}
+          {showEmailTooltip && (
+            <div className="absolute top-14 right-0 bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-medium shadow-xl whitespace-nowrap z-[60] animate-in fade-in zoom-in duration-200">
+              <div className="absolute -top-1 right-4 w-2 h-2 bg-slate-900 rotate-45"></div>
+              {email}
+            </div>
+          )}
         </div>
 
         {/* --- DESKTOP ONLY LOGOUT BUTTON --- */}
