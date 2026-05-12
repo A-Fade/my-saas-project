@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Topbar from "@/app/components/Topbar";
 import Sidebar from "@/app/components/Sidebar";
-import { UserPlus, Briefcase, Phone, Banknote, Edit3, Eye, PlusCircle, ArrowRight } from "lucide-react";
+import { UserPlus, Briefcase, Phone, Banknote, Edit3, Eye, PlusCircle, ArrowRight, Trash2 } from "lucide-react";
 
 export default function Clients() {
   const [clients, setClients] = useState<any[]>([]);
@@ -90,8 +90,35 @@ export default function Clients() {
     }
   }
 
+  async function handleDelete(id: string) {
+    if (!confirm("Are you sure you want to delete this client?")) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from("clients")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+      
+      toast.success("Client deleted");
+      fetchAll(user.id);
+    } catch (err: any) {
+      toast.error("Delete failed: " + err.message);
+    }
+  }
+
   function resetForm() {
-    setName(""); setPhone(""); setProjectId(""); setNewProjectName(""); setBudget(""); setEditingId(null); setIsNewProject(false);
+    setName("");
+    setPhone("");
+    setProjectId("");
+    setNewProjectName("");
+    setBudget("");
+    setEditingId(null);
+    setIsNewProject(false);
   }
 
   if (loading) return (
@@ -105,10 +132,8 @@ export default function Clients() {
       <div className="hidden md:block w-64 fixed left-0 top-0 h-screen z-40 border-r border-slate-200">
         <Sidebar />
       </div>
-      
       <div className="flex-1 md:ml-64 flex flex-col">
         <Topbar />
-        
         <main className="p-6 md:p-12 max-w-7xl mx-auto w-full">
           {/* Header */}
           <div className="mb-10 flex justify-between items-center">
@@ -126,14 +151,10 @@ export default function Clients() {
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-12 transition-all">
             <div className="px-8 py-5 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
               <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">{editingId ? "Update Information" : "New Client Onboarding"}</h2>
-              <button 
-                onClick={() => setIsNewProject(!isNewProject)} 
-                className="text-[10px] font-bold bg-slate-900 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-slate-800 transition-colors"
-              >
+              <button onClick={() => setIsNewProject(!isNewProject)} className="text-[10px] font-bold bg-slate-900 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-slate-800 transition-colors" >
                 <PlusCircle size={14}/> {isNewProject ? "Select Existing Project" : "Create New Project"}
               </button>
             </div>
-            
             <div className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
                 <div className="space-y-2">
@@ -160,7 +181,6 @@ export default function Clients() {
                   <input type="number" className="w-full bg-slate-50 border border-slate-100 p-4 rounded-xl outline-none focus:bg-white focus:border-slate-900 font-bold" placeholder="0.00" value={budget} onChange={e => setBudget(e.target.value)} />
                 </div>
               </div>
-              
               <div className="flex gap-4">
                 <button onClick={handleSave} disabled={saving} className="bg-slate-900 text-white px-10 py-4 rounded-xl font-bold hover:bg-slate-800 transition-all disabled:opacity-50">
                   {saving ? "SAVING DATA..." : "SAVE CLIENT RECORD"}
@@ -182,10 +202,8 @@ export default function Clients() {
                   </div>
                   <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-md">Verified</span>
                 </div>
-                
                 <h3 className="text-xl font-bold text-slate-800 mb-1">{c.name}</h3>
                 <p className="text-sm text-slate-500 font-medium mb-6 flex items-center gap-1.5"><Phone size={14}/> {c.phone}</p>
-                
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Assigned Project</p>
                   <p className="font-bold text-slate-700 text-sm truncate uppercase tracking-tight">{c.projects?.name || 'Manual Assignment'}</p>
@@ -194,15 +212,18 @@ export default function Clients() {
                     <p className="text-xl font-bold text-slate-900 mt-0.5">₹{c.display_budget.toLocaleString()}</p>
                   </div>
                 </div>
-
-                <div className="flex gap-3">
-                  <button onClick={() => {setEditingId(c.id); setName(c.name); setPhone(c.phone); setProjectId(c.project_id); setBudget(c.display_budget); window.scrollTo({top:0, behavior:'smooth'});}} className="flex-1 bg-slate-50 border border-slate-200 text-slate-700 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-900 hover:text-white transition-all">
+                {/* ACTIONS */}
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <button onClick={() => {setEditingId(c.id); setName(c.name); setPhone(c.phone); setProjectId(c.project_id); setBudget(c.display_budget); window.scrollTo({top:0, behavior:'smooth'});}} className="bg-slate-50 border border-slate-200 text-slate-700 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-900 hover:text-white transition-all">
                     Edit Client
                   </button>
-                  <button onClick={() => c.project_id && router.push(`/projects/${c.project_id}`)} className="flex items-center justify-center gap-2 flex-1 bg-slate-50 border border-slate-200 text-slate-700 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-900 hover:text-white transition-all">
-                    View Project <ArrowRight size={14}/>
+                  <button onClick={() => handleDelete(c.id)} className="bg-slate-50 border border-slate-200 text-red-600 py-2.5 rounded-xl font-bold text-xs hover:bg-red-50 hover:border-red-100 transition-all">
+                    Delete
                   </button>
                 </div>
+                <button onClick={() => c.project_id && router.push(`/projects/${c.project_id}`)} className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white py-2.5 rounded-xl font-bold text-xs hover:bg-slate-800 transition-all">
+                  View Project <ArrowRight size={14}/>
+                </button>
               </div>
             ))}
           </div>
