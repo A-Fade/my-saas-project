@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Topbar from "@/app/components/Topbar";
 import Sidebar from "@/app/components/Sidebar";
-import { Users, Phone, Banknote, Briefcase, Edit3, Plus, UserPlus, ArrowRight } from "lucide-react";
+import { Users, Phone, Banknote, Briefcase, Edit3, Plus, UserPlus, ArrowRight, Trash2 } from "lucide-react";
 
 export default function Workers() {
   const [workers, setWorkers] = useState<any[]>([]);
@@ -36,12 +36,10 @@ export default function Workers() {
     setLoading(true);
     const { data: wData } = await supabase.from("workers").select("*").eq("user_id", userId).order("id", { ascending: false });
     const { data: pData } = await supabase.from("projects").select("*").eq("user_id", userId);
-    
     const merged = (wData || []).map((worker: any) => {
       const project = (pData || []).find((p: any) => String(p.id) === String(worker.project_id));
       return { ...worker, projects: project || null };
     });
-    
     setWorkers(merged);
     setProjects(pData || []);
     setLoading(false);
@@ -54,14 +52,7 @@ export default function Workers() {
       return;
     }
     setSaving(true);
-    const payload = { 
-      name: name.trim(), 
-      phone: phone.trim(), 
-      salary: Number(salary), 
-      project_id: projectId, 
-      user_id: user.id 
-    };
-
+    const payload = { name: name.trim(), phone: phone.trim(), salary: Number(salary), project_id: projectId, user_id: user.id };
     if (editingId) {
       const { error } = await supabase.from("workers").update(payload).eq("id", editingId);
       if (error) toast.error(error.message);
@@ -74,6 +65,22 @@ export default function Workers() {
     resetForm();
     fetchAll(user.id);
     setSaving(false);
+  }
+
+  // ADDED DELETE FUNCTION
+  async function handleDelete(id: any) {
+    if (!confirm("Are you sure you want to delete this worker?")) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase.from("workers").delete().eq("id", id).eq("user_id", user.id);
+
+    if (error) {
+      toast.error("Delete failed: " + error.message);
+    } else {
+      toast.success("Worker removed");
+      fetchAll(user.id);
+    }
   }
 
   function editWorker(w: any) {
@@ -104,10 +111,8 @@ export default function Workers() {
       <div className="hidden md:block w-64 fixed left-0 top-0 h-screen z-40 border-r border-slate-200">
         <Sidebar />
       </div>
-      
       <div className="flex-1 md:ml-64 flex flex-col">
         <Topbar />
-        
         <main className="p-6 md:p-12 max-w-7xl mx-auto w-full">
           {/* Header */}
           <div className="mb-10 flex justify-between items-center">
@@ -128,7 +133,6 @@ export default function Workers() {
                 {editingId ? "Modify Staff Details" : "Onboard New Worker"}
               </h2>
             </div>
-            
             <div className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
                 <div className="space-y-2">
@@ -151,7 +155,6 @@ export default function Workers() {
                   </select>
                 </div>
               </div>
-              
               <div className="flex gap-4">
                 <button onClick={handleSave} disabled={saving} className="bg-slate-900 text-white px-10 py-4 rounded-xl font-bold hover:bg-slate-800 transition-all disabled:opacity-50">
                   {saving ? "SAVING..." : editingId ? "UPDATE WORKER" : "ADD WORKER"}
@@ -173,10 +176,8 @@ export default function Workers() {
                   </div>
                   <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded-md">Active</span>
                 </div>
-                
                 <h3 className="text-xl font-bold text-slate-800 mb-1">{w.name}</h3>
                 <p className="text-sm text-slate-500 font-medium mb-6 flex items-center gap-1.5"><Phone size={14}/> {w.phone}</p>
-                
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6">
                   <div className="flex justify-between items-center mb-3">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current Site</p>
@@ -191,13 +192,16 @@ export default function Workers() {
                     <p className="text-[9px] font-bold text-slate-400 italic mb-1">per day</p>
                   </div>
                 </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <button onClick={() => editWorker(w)} className="bg-slate-50 border border-slate-200 text-slate-700 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center gap-2">
-                    <Edit3 size={14}/> Edit
+                {/* ACTIONS UPDATED */}
+                <div className="grid grid-cols-3 gap-2">
+                  <button onClick={() => editWorker(w)} className="bg-slate-50 border border-slate-200 text-slate-700 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center gap-1">
+                    <Edit3 size={12}/> Edit
                   </button>
-                  <button onClick={() => w.project_id && router.push(`/projects/${w.project_id}`)} className="bg-slate-50 border border-slate-200 text-slate-700 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center gap-2">
-                    Site <ArrowRight size={14}/>
+                  <button onClick={() => handleDelete(w.id)} className="bg-slate-50 border border-slate-200 text-red-600 py-2.5 rounded-xl font-bold text-xs hover:bg-red-50 hover:border-red-100 transition-all flex items-center justify-center gap-1">
+                    <Trash2 size={12}/> Delete
+                  </button>
+                  <button onClick={() => w.project_id && router.push(`/projects/${w.project_id}`)} className="bg-slate-900 text-white py-2.5 rounded-xl font-bold text-xs hover:bg-slate-800 transition-all flex items-center justify-center gap-1">
+                    Site <ArrowRight size={12}/>
                   </button>
                 </div>
               </div>
