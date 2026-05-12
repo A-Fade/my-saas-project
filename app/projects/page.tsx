@@ -46,6 +46,7 @@ export default function Projects() {
     }
     setSaving(true);
     const payload = { name, location, status, user_id: user.id };
+
     if (editingId) {
       const { error } = await supabase.from("projects").update(payload).eq("id", editingId);
       if (error) toast.error("Update failed");
@@ -68,19 +69,40 @@ export default function Projects() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  // FIXED DELETE FUNCTION
   async function handleDelete(id: any) {
-    if (!confirm("Delete this project?")) return;
-    const { data: { user } } = await supabase.auth.getUser();
-    const { error } = await supabase.from("projects").delete().eq("id", id);
-    if (error) toast.error("Delete failed");
-    else {
-      toast.success("Project deleted");
-      if (user) fetchProjects(user.id);
+    if (!confirm("Are you sure you want to delete this project?")) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("User session not found");
+        return;
+      }
+
+      const { error } = await supabase
+        .from("projects")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id); // Security: ensures user can only delete their own project
+
+      if (error) {
+        console.error("Delete error:", error);
+        toast.error("Delete failed: " + error.message);
+      } else {
+        toast.success("Project deleted successfully");
+        fetchProjects(user.id);
+      }
+    } catch (err) {
+      toast.error("An unexpected error occurred");
     }
   }
 
   function resetForm() {
-    setName(""); setLocation(""); setStatus(""); setEditingId(null);
+    setName("");
+    setLocation("");
+    setStatus("");
+    setEditingId(null);
   }
 
   if (loading) return (
@@ -94,10 +116,8 @@ export default function Projects() {
       <div className="hidden md:block w-64 fixed left-0 top-0 h-screen z-40 border-r border-slate-200">
         <Sidebar />
       </div>
-      
       <div className="flex-1 md:ml-64 flex flex-col">
         <Topbar />
-        
         <main className="p-6 md:p-12 max-w-7xl mx-auto w-full">
           {/* Header */}
           <div className="mb-10 flex justify-between items-center">
@@ -118,7 +138,6 @@ export default function Projects() {
                 {editingId ? "Modify Project Record" : "Register New Project"}
               </h2>
             </div>
-            
             <div className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="space-y-2">
@@ -162,10 +181,8 @@ export default function Projects() {
                     {p.status.toUpperCase()}
                   </span>
                 </div>
-                
                 <h3 className="text-xl font-bold text-slate-800 mb-1">{p.name}</h3>
                 <p className="text-sm text-slate-500 font-medium mb-6 flex items-center gap-1.5"><MapPin size={14}/> {p.location}</p>
-                
                 <div className="grid grid-cols-3 gap-2">
                   <button onClick={() => handleEdit(p)} className="bg-slate-50 border border-slate-200 text-slate-700 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-100 transition-all">
                     Edit
