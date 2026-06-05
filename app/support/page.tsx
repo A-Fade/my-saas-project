@@ -51,7 +51,6 @@ export default function SupportPage() {
     }
 
     setSuccess(true);
-
     setName("");
     setEmail("");
     setIssueType("");
@@ -94,7 +93,6 @@ export default function SupportPage() {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
 
-        {/* Header */}
         <div className="mb-10">
           <span className="px-4 py-2 bg-white border rounded-full text-sm font-medium">
             BuilderPro Help Center
@@ -109,7 +107,6 @@ export default function SupportPage() {
           </p>
         </div>
 
-        {/* Search */}
         <div className="relative mb-12">
           <Search
             size={20}
@@ -125,7 +122,6 @@ export default function SupportPage() {
           />
         </div>
 
-        {/* Quick Help */}
         <h2 className="text-3xl font-bold mb-6">
           Quick Help
         </h2>
@@ -170,10 +166,8 @@ export default function SupportPage() {
 
         </div>
 
-        {/* FAQ + Contact */}
         <div className="grid lg:grid-cols-3 gap-8 mb-12">
-
-          {/* FAQ */}
+                    {/* FAQ */}
           <div className="lg:col-span-2 bg-white rounded-3xl border p-6">
 
             <div className="flex justify-between items-center mb-6">
@@ -242,45 +236,78 @@ export default function SupportPage() {
             </p>
 
             <form
-  onSubmit={handleSubmit}
-  className="space-y-4"
->
+              onSubmit={handleSubmit}
+              className="space-y-4"
+            >
 
               <input
                 type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 placeholder="Your Name"
+                required
                 className="w-full border rounded-xl h-12 px-4"
               />
 
               <input
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Your Email"
+                required
                 className="w-full border rounded-xl h-12 px-4"
               />
 
-              <select className="w-full border rounded-xl h-12 px-4">
-                <option>Select Issue Type</option>
-                <option>Project Issue</option>
-                <option>Worker Issue</option>
-                <option>Payment Issue</option>
-                <option>Account Issue</option>
+              <select
+                value={issueType}
+                onChange={(e) => setIssueType(e.target.value)}
+                required
+                className="w-full border rounded-xl h-12 px-4"
+              >
+                <option value="">
+                  Select Issue Type
+                </option>
+                <option value="Project Issue">
+                  Project Issue
+                </option>
+                <option value="Worker Issue">
+                  Worker Issue
+                </option>
+                <option value="Payment Issue">
+                  Payment Issue
+                </option>
+                <option value="Account Issue">
+                  Account Issue
+                </option>
               </select>
 
               <textarea
                 rows={5}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
                 placeholder="Describe your issue..."
+                required
                 className="w-full border rounded-xl p-4 resize-none"
               />
 
-              <Link
-                href="/contact"
-                className="w-full h-12 bg-black text-white rounded-xl flex items-center justify-center gap-2 hover:bg-gray-800"
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 bg-black text-white rounded-xl flex items-center justify-center gap-2 hover:bg-gray-800 disabled:opacity-50"
               >
                 <Send size={16} />
-                Contact Support
-              </Link>
+                {loading
+                  ? "Sending..."
+                  : "Send Message"}
+              </button>
 
-            </div>
+              {success && (
+                <div className="bg-green-50 border border-green-200 text-green-700 p-3 rounded-xl">
+                  ✅ Message sent successfully!
+                </div>
+              )}
+
+            </form>
 
           </div>
 
@@ -316,7 +343,7 @@ export default function SupportPage() {
               </h4>
 
               <p className="text-gray-500">
-                9:00 AM - 6:00 PM
+                9:00 AM - 7:00 PM
               </p>
             </div>
 
@@ -338,7 +365,7 @@ export default function SupportPage() {
         </div>
 
       </div>
-    
+    </div>
   );
 }
 
