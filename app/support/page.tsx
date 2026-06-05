@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import {
   Search,
@@ -16,6 +17,46 @@ import {
 export default function SupportPage() {
   const [search, setSearch] = useState("");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [issueType, setIssueType] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+
+    setLoading(true);
+
+    const { error } = await supabase
+      .from("support_messages")
+      .insert([
+        {
+          name,
+          email,
+          issue_type: issueType,
+          message,
+        },
+      ]);
+
+    setLoading(false);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    setSuccess(true);
+
+    setName("");
+    setEmail("");
+    setIssueType("");
+    setMessage("");
+  };
 
   const faqs = [
     {
@@ -200,7 +241,10 @@ export default function SupportPage() {
               Need personal assistance?
             </p>
 
-            <div className="space-y-4">
+            <form
+  onSubmit={handleSubmit}
+  className="space-y-4"
+>
 
               <input
                 type="text"
@@ -294,7 +338,7 @@ export default function SupportPage() {
         </div>
 
       </div>
-    </div>
+    
   );
 }
 
