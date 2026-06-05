@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 import {
   Mail,
   Phone,
@@ -15,11 +16,43 @@ import {
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [issueType, setIssueType] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
 
-    // Future Supabase Integration
+    setLoading(true);
+
+    const { error } = await supabase
+      .from("support_messages")
+      .insert([
+        {
+          name,
+          email,
+          issue_type: issueType,
+          message,
+        },
+      ]);
+
+    setLoading(false);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
     setSubmitted(true);
+
+    setName("");
+    setEmail("");
+    setIssueType("");
+    setMessage("");
   };
 
   return (
@@ -113,9 +146,7 @@ export default function ContactPage() {
                 <form
                   onSubmit={handleSubmit}
                   className="space-y-5"
-                >
-
-                  <div>
+                >                  <div>
                     <label className="block mb-2 font-medium">
                       Full Name
                     </label>
@@ -123,6 +154,10 @@ export default function ContactPage() {
                     <input
                       type="text"
                       required
+                      value={name}
+                      onChange={(e) =>
+                        setName(e.target.value)
+                      }
                       placeholder="Enter your full name"
                       className="w-full h-14 border rounded-2xl px-4 outline-none focus:ring-2 focus:ring-black"
                     />
@@ -136,6 +171,10 @@ export default function ContactPage() {
                     <input
                       type="email"
                       required
+                      value={email}
+                      onChange={(e) =>
+                        setEmail(e.target.value)
+                      }
                       placeholder="Enter your email"
                       className="w-full h-14 border rounded-2xl px-4 outline-none focus:ring-2 focus:ring-black"
                     />
@@ -148,29 +187,33 @@ export default function ContactPage() {
 
                     <select
                       required
+                      value={issueType}
+                      onChange={(e) =>
+                        setIssueType(e.target.value)
+                      }
                       className="w-full h-14 border rounded-2xl px-4 outline-none focus:ring-2 focus:ring-black"
                     >
                       <option value="">
                         Select Issue Type
                       </option>
 
-                      <option>
+                      <option value="Project Issue">
                         Project Issue
                       </option>
 
-                      <option>
+                      <option value="Worker Management Issue">
                         Worker Management Issue
                       </option>
 
-                      <option>
+                      <option value="Payment Issue">
                         Payment Issue
                       </option>
 
-                      <option>
+                      <option value="Account Issue">
                         Account Issue
                       </option>
 
-                      <option>
+                      <option value="Technical Support">
                         Technical Support
                       </option>
                     </select>
@@ -184,6 +227,10 @@ export default function ContactPage() {
                     <textarea
                       rows={6}
                       required
+                      value={message}
+                      onChange={(e) =>
+                        setMessage(e.target.value)
+                      }
                       placeholder="Describe your issue in detail..."
                       className="w-full border rounded-2xl p-4 resize-none outline-none focus:ring-2 focus:ring-black"
                     />
@@ -191,10 +238,13 @@ export default function ContactPage() {
 
                   <button
                     type="submit"
-                    className="w-full h-14 bg-black text-white rounded-2xl flex items-center justify-center gap-2 hover:bg-gray-800 transition"
+                    disabled={loading}
+                    className="w-full h-14 bg-black text-white rounded-2xl flex items-center justify-center gap-2 hover:bg-gray-800 transition disabled:opacity-50"
                   >
                     <Send size={18} />
-                    Send Message
+                    {loading
+                      ? "Sending..."
+                      : "Send Message"}
                   </button>
 
                 </form>
