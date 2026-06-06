@@ -10,7 +10,8 @@ import {
   Users, 
   CreditCard, 
   UserPlus, // ✅ Naya icon clients ke liye
-  LifeBuoy
+  LifeBuoy,
+  User
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -58,6 +59,11 @@ export default function Sidebar() {
       path: "/support",
       icon: <LifeBuoy size={20} />,
     },
+    {
+  name: "Profile",
+  path: "/profile",
+  icon: <User size={20} />,
+},
   ];
 
   return (
