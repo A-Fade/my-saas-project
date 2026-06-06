@@ -158,7 +158,7 @@ export default function LandingPage() {
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">© 2024 Builder Pro. Made for Contractors.</p>
           <div className="flex gap-8 text-[11px] font-bold uppercase tracking-widest text-slate-500">
             <Link href="/login" className="hover:text-slate-900 transition-colors">Login</Link>
-            <Link href="/login" className="hover:text-slate-900 transition-colors">Support</Link>
+            <Link href="/support" className="hover:text-slate-900 transition-colors">Support</Link>
           </div>
         </div>
       </footer>
