@@ -51,6 +51,12 @@ export default function Sidebar() {
       path: "/payments",
       icon: <CreditCard size={20} />,
     },
+    
+    {
+      name: "Support",
+      path: "/support",
+      icon: <CreditCard size={20} />,
+    },
   ];
 
   return (
