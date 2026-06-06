@@ -9,7 +9,8 @@ import {
   Folder, 
   Users, 
   CreditCard, 
-  UserPlus // ✅ Naya icon clients ke liye
+  UserPlus, // ✅ Naya icon clients ke liye
+  LifeBuoy
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -55,7 +56,7 @@ export default function Sidebar() {
     {
       name: "Support",
       path: "/support",
-      icon: <CreditCard size={20} />,
+      icon: <LifeBuoy size={20} />,
     },
   ];
 
