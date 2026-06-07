@@ -31,29 +31,6 @@ export default function ProfilePage() {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
- async function removePhoto() {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    console.log("Removing photo for:", user.id);
-
-    const { error } = await supabase
-      .from("profiles")
-      .update({ avatar_url: null })
-      .eq("id", user.id);
-
-    if (error) throw error;
-
-    setAvatarUrl("");
-
-    alert("Photo removed successfully");
-  } catch (err: any) {
-    console.error(err);
-    alert(err.message);
-  }
-}
-
   useEffect(() => {
     fetchProfile();
   }, []);
@@ -110,6 +87,72 @@ export default function ProfilePage() {
     alert("Profile updated successfully");
   }
 
+  async function handleAvatarChange(
+    e: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    try {
+      setUploading(true);
+
+      const fileName = `${userId}-${Date.now()}-${file.name}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
+
+      const publicUrl = data.publicUrl;
+
+      setAvatarUrl(publicUrl);
+
+      await supabase
+        .from("profiles")
+        .update({
+          avatar_url: publicUrl,
+        })
+        .eq("id", userId);
+
+      alert("Photo uploaded successfully");
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function removePhoto() {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          avatar_url: null,
+        })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      setAvatarUrl("");
+
+      alert("Photo removed successfully");
+    } catch (err: any) {
+      alert(err.message);
+    }
+  }
+
   async function updatePassword() {
     if (newPassword !== confirmPassword) {
       alert("Passwords do not match");
@@ -140,23 +183,30 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="p-8">
-        <h2 className="text-xl font-semibold">Loading Profile...</h2>
+        <h2 className="text-xl font-semibold">
+          Loading Profile...
+        </h2>
       </div>
     );
   }
 
-  return (
-    <div className="p-6 md:p-8 bg-slate-50 min-h-screen">
+  return (    <div className="p-4 sm:p-6 md:p-8 bg-slate-50 min-h-screen">
+
+      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-slate-900">Profile</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
+          Profile
+        </h1>
+
         <p className="text-slate-500 mt-2">
           Manage your account information and security.
         </p>
       </div>
 
       {/* Profile Information */}
-      <div className="bg-white rounded-3xl border p-8 mb-8">
-        <h2 className="text-3xl font-bold mb-2">
+      <div className="bg-white rounded-3xl border p-5 md:p-8 mb-8">
+
+        <h2 className="text-2xl md:text-3xl font-bold mb-2">
           Profile Information
         </h2>
 
@@ -165,14 +215,73 @@ export default function ProfilePage() {
         </p>
 
         <div className="grid lg:grid-cols-[1fr_250px] gap-8">
+
+          {/* Photo */}
+          <div className="flex flex-col items-center justify-center order-first lg:order-last">
+
+            <div className="w-40 h-40 md:w-44 md:h-44 rounded-3xl bg-slate-100 overflow-hidden flex items-center justify-center">
+
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User
+                  size={80}
+                  className="text-slate-500"
+                />
+              )}
+
+            </div>
+
+            <input
+              type="file"
+              accept="image/*"
+              id="avatarInput"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+
+            <div className="flex flex-col sm:flex-row gap-3 mt-5">
+
+              <button
+                onClick={() =>
+                  document
+                    .getElementById("avatarInput")
+                    ?.click()
+                }
+                className="border px-5 py-2 rounded-xl"
+              >
+                {uploading
+                  ? "Uploading..."
+                  : "Add Photo"}
+              </button>
+
+              <button
+                onClick={removePhoto}
+                className="border px-5 py-2 rounded-xl text-red-500"
+              >
+                Remove Photo
+              </button>
+
+            </div>
+
+          </div>
+
+          {/* Form */}
           <div>
+
             <label className="block mb-2 font-medium">
               Full Name
             </label>
 
             <input
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={(e) =>
+                setFullName(e.target.value)
+              }
               className="w-full border rounded-xl px-4 py-3"
             />
 
@@ -188,54 +297,20 @@ export default function ProfilePage() {
 
             <button
               onClick={saveProfile}
-              className="mt-8 bg-slate-900 text-white px-8 py-3 rounded-xl hover:bg-slate-800"
+              className="mt-8 w-full sm:w-auto bg-slate-900 text-white px-8 py-3 rounded-xl hover:bg-slate-800"
             >
               Save Changes
             </button>
+
           </div>
 
-          <div className="flex flex-col items-center justify-center">
-            <div className="w-44 h-44 rounded-3xl bg-slate-100 flex items-center justify-center">
-              <div className="w-44 h-44 rounded-3xl bg-slate-100 flex items-center justify-center overflow-hidden">
-  {avatarUrl ? (
-    <img
-      src={avatarUrl}
-      className="w-full h-full object-cover"
-    />
-  ) : (
-    <User size={80} className="text-slate-500" />
-  )}
-</div>
-            </div>
-<input
-  type="file"
-  accept="image/*"
-  id="avatarInput"
-  style={{ display: "none" }}
-  onChange={handleAvatarChange}
-/>
-            <button
-  onClick={() =>
-    document.getElementById("avatarInput")?.click()
-  }
-  className="mt-5 border px-5 py-2 rounded-xl"
->
-  {uploading ? "Uploading..." : "Add Photo"}
-</button>
-
-<button
-  onClick={removePhoto}
-  className="mt-3 border px-5 py-2 rounded-xl text-red-500"
->
-  Remove Photo
-</button>
-          </div>
         </div>
       </div>
 
       {/* Password Section */}
-      <div className="bg-white rounded-3xl border p-8 mb-8">
-        <h2 className="text-3xl font-bold mb-2">
+      <div className="bg-white rounded-3xl border p-5 md:p-8 mb-8">
+
+        <h2 className="text-2xl md:text-3xl font-bold mb-2">
           Change Password
         </h2>
 
@@ -244,7 +319,9 @@ export default function ProfilePage() {
         </p>
 
         <div className="grid lg:grid-cols-[1fr_300px] gap-10">
+
           <div>
+
             <label className="block mb-2 font-medium">
               Current Password
             </label>
@@ -261,7 +338,9 @@ export default function ProfilePage() {
 
               <button
                 type="button"
-                onClick={() => setShowCurrent(!showCurrent)}
+                onClick={() =>
+                  setShowCurrent(!showCurrent)
+                }
                 className="absolute right-4 top-4"
               >
                 {showCurrent ? <EyeOff /> : <Eye />}
@@ -284,7 +363,9 @@ export default function ProfilePage() {
 
               <button
                 type="button"
-                onClick={() => setShowNew(!showNew)}
+                onClick={() =>
+                  setShowNew(!showNew)
+                }
                 className="absolute right-4 top-4"
               >
                 {showNew ? <EyeOff /> : <Eye />}
@@ -307,7 +388,9 @@ export default function ProfilePage() {
 
               <button
                 type="button"
-                onClick={() => setShowConfirm(!showConfirm)}
+                onClick={() =>
+                  setShowConfirm(!showConfirm)
+                }
                 className="absolute right-4 top-4"
               >
                 {showConfirm ? <EyeOff /> : <Eye />}
@@ -316,13 +399,15 @@ export default function ProfilePage() {
 
             <button
               onClick={updatePassword}
-              className="mt-8 bg-slate-900 text-white px-8 py-3 rounded-xl hover:bg-slate-800"
+              className="mt-8 w-full sm:w-auto bg-slate-900 text-white px-8 py-3 rounded-xl hover:bg-slate-800"
             >
               Update Password
             </button>
+
           </div>
 
           <div className="bg-slate-50 rounded-3xl p-6">
+
             <Lock className="mb-5 text-blue-600" />
 
             <h3 className="font-bold text-lg mb-4">
@@ -335,13 +420,17 @@ export default function ProfilePage() {
               <li>• Include a number</li>
               <li>• Include a special character</li>
             </ul>
+
           </div>
+
         </div>
+
       </div>
 
       {/* Account Info */}
-      <div className="bg-white rounded-3xl border p-8">
-        <h2 className="text-3xl font-bold mb-2">
+      <div className="bg-white rounded-3xl border p-5 md:p-8">
+
+        <h2 className="text-2xl md:text-3xl font-bold mb-2">
           Account Information
         </h2>
 
@@ -349,24 +438,29 @@ export default function ProfilePage() {
           View your account details and activity.
         </p>
 
-        <div className="grid md:grid-cols-4 gap-6">
-          <div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+          <div className="p-4 rounded-2xl bg-slate-50">
             <Shield className="mb-3 text-slate-500" />
-            <p className="text-sm text-slate-500">User ID</p>
+            <p className="text-sm text-slate-500">
+              User ID
+            </p>
             <p className="font-medium break-all">
               {userId}
             </p>
           </div>
 
-          <div>
+          <div className="p-4 rounded-2xl bg-slate-50">
             <User className="mb-3 text-slate-500" />
             <p className="text-sm text-slate-500">
               Account Type
             </p>
-            <p className="font-medium">Admin</p>
+            <p className="font-medium">
+              Admin
+            </p>
           </div>
 
-          <div>
+          <div className="p-4 rounded-2xl bg-slate-50">
             <Calendar className="mb-3 text-slate-500" />
             <p className="text-sm text-slate-500">
               Member Since
@@ -378,7 +472,7 @@ export default function ProfilePage() {
             </p>
           </div>
 
-          <div>
+          <div className="p-4 rounded-2xl bg-slate-50">
             <Clock className="mb-3 text-slate-500" />
             <p className="text-sm text-slate-500">
               Status
@@ -387,45 +481,11 @@ export default function ProfilePage() {
               Active
             </p>
           </div>
+
         </div>
+
       </div>
+
     </div>
   );
-
-  async function handleAvatarChange(
-  e: React.ChangeEvent<HTMLInputElement>
-) {
-  const file = e.target.files?.[0];
-  if (!file) return;
-
-  try {
-    setUploading(true);
-
-    const fileName = `${userId}-${Date.now()}-${file.name}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("avatars")
-      .upload(fileName, file);
-
-    if (uploadError) throw uploadError;
-
-    const { data } = supabase.storage
-      .from("avatars")
-      .getPublicUrl(fileName);
-
-    const publicUrl = data.publicUrl;
-
-    setAvatarUrl(publicUrl);
-
-    await supabase
-      .from("profiles")
-      .update({ avatar_url: publicUrl })
-      .eq("id", userId);
-
-  } catch (err: any) {
-    alert(err.message);
-  } finally {
-    setUploading(false);
-  }
-}
 }
