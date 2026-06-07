@@ -31,9 +31,28 @@ export default function ProfilePage() {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  async function removePhoto() {
-    // remove logic
+ async function removePhoto() {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    console.log("Removing photo for:", user.id);
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ avatar_url: null })
+      .eq("id", user.id);
+
+    if (error) throw error;
+
+    setAvatarUrl("");
+
+    alert("Photo removed successfully");
+  } catch (err: any) {
+    console.error(err);
+    alert(err.message);
   }
+}
 
   useEffect(() => {
     fetchProfile();
