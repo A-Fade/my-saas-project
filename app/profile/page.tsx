@@ -4,30 +4,37 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   User,
-  Mail,
   Lock,
-  Save,
-  CheckCircle,
+  Eye,
+  EyeOff,
+  Shield,
+  Calendar,
+  Clock,
 } from "lucide-react";
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
 
   const [userId, setUserId] = useState("");
-  const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [createdAt, setCreatedAt] = useState("");
 
-  const [newPassword, setNewPassword] =
-    useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [message, setMessage] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
-    loadProfile();
+    fetchProfile();
   }, []);
 
-  const loadProfile = async () => {
+  async function fetchProfile() {
+    setLoading(true);
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -38,7 +45,6 @@ export default function ProfilePage() {
     }
 
     setUserId(user.id);
-    setEmail(user.email || "");
 
     const { data } = await supabase
       .from("profiles")
@@ -48,220 +54,286 @@ export default function ProfilePage() {
 
     if (data) {
       setFullName(data.full_name || "");
+      setEmail(data.email || "");
+      setCreatedAt(data.created_at || "");
     }
 
     setLoading(false);
-  };
+  }
 
-  const saveProfile = async () => {
-    setSaving(true);
+  async function saveProfile() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
 
     const { error } = await supabase
       .from("profiles")
-      .upsert({
-        id: userId,
+      .update({
         full_name: fullName,
-        email: email,
-      });
-
-    setSaving(false);
+      })
+      .eq("id", user.id);
 
     if (error) {
       alert(error.message);
       return;
     }
 
-    setMessage("Profile updated successfully");
-  };
+    alert("Profile updated successfully");
+  }
 
-  const updatePassword = async () => {
-    if (!newPassword) {
-      alert("Enter new password");
+  async function updatePassword() {
+    if (newPassword !== confirmPassword) {
+      alert("Passwords do not match");
       return;
     }
 
-    const { error } =
-      await supabase.auth.updateUser({
-        password: newPassword,
-      });
+    if (newPassword.length < 6) {
+      alert("Password must be at least 6 characters");
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
 
     if (error) {
       alert(error.message);
       return;
     }
 
+    setCurrentPassword("");
     setNewPassword("");
-    setMessage("Password updated successfully");
-  };
+    setConfirmPassword("");
+
+    alert("Password updated successfully");
+  }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
+      <div className="p-8">
+        <h2 className="text-xl font-semibold">Loading Profile...</h2>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-5xl mx-auto px-6 py-10">
+    <div className="p-6 md:p-8 bg-slate-50 min-h-screen">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-slate-900">Profile</h1>
+        <p className="text-slate-500 mt-2">
+          Manage your account information and security.
+        </p>
+      </div>
 
-        <div className="text-center mb-12">
+      {/* Profile Information */}
+      <div className="bg-white rounded-3xl border p-8 mb-8">
+        <h2 className="text-3xl font-bold mb-2">
+          Profile Information
+        </h2>
 
-          <span className="px-4 py-2 rounded-full border bg-white text-sm font-medium">
-            BuilderPro Account
-          </span>
+        <p className="text-slate-500 mb-8">
+          Update your personal details.
+        </p>
 
-          <h1 className="text-5xl font-bold mt-6">
-            My Profile
-          </h1>
+        <div className="grid lg:grid-cols-[1fr_250px] gap-8">
+          <div>
+            <label className="block mb-2 font-medium">
+              Full Name
+            </label>
 
-          <p className="text-gray-500 mt-4">
-            Manage your account information and security.
-          </p>
+            <input
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="w-full border rounded-xl px-4 py-3"
+            />
 
-        </div>
+            <label className="block mb-2 mt-6 font-medium">
+              Email Address
+            </label>
 
-        {message && (
-          <div className="mb-6 bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center gap-2">
-            <CheckCircle size={18} />
-            {message}
+            <input
+              value={email}
+              disabled
+              className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+            />
+
+            <button
+              onClick={saveProfile}
+              className="mt-8 bg-slate-900 text-white px-8 py-3 rounded-xl hover:bg-slate-800"
+            >
+              Save Changes
+            </button>
           </div>
-        )}
 
-        <div className="grid lg:grid-cols-2 gap-8">
-                  {/* Profile Information */}
-          <div className="bg-white border rounded-3xl p-8">
-
-            <h2 className="text-3xl font-bold mb-6">
-              Profile Information
-            </h2>
-
-            <div className="space-y-5">
-
-              <div>
-                <label className="block mb-2 font-medium">
-                  Full Name
-                </label>
-
-                <div className="relative">
-                  <User
-                    size={18}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                  />
-
-                  <input
-                    type="text"
-                    value={fullName}
-                    onChange={(e) =>
-                      setFullName(e.target.value)
-                    }
-                    placeholder="Enter your full name"
-                    className="w-full h-14 border rounded-2xl pl-12 pr-4 outline-none focus:ring-2 focus:ring-black"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block mb-2 font-medium">
-                  Email Address
-                </label>
-
-                <div className="relative">
-                  <Mail
-                    size={18}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                  />
-
-                  <input
-                    type="email"
-                    value={email}
-                    disabled
-                    className="w-full h-14 border rounded-2xl pl-12 pr-4 bg-gray-100 cursor-not-allowed"
-                  />
-                </div>
-              </div>
-
-              <button
-                onClick={saveProfile}
-                disabled={saving}
-                className="w-full h-14 bg-black text-white rounded-2xl flex items-center justify-center gap-2 hover:bg-gray-800"
-              >
-                <Save size={18} />
-
-                {saving
-                  ? "Saving..."
-                  : "Save Profile"}
-              </button>
-
+          <div className="flex flex-col items-center justify-center">
+            <div className="w-44 h-44 rounded-3xl bg-slate-100 flex items-center justify-center">
+              <User size={80} className="text-slate-500" />
             </div>
 
+            <button className="mt-5 border px-5 py-2 rounded-xl">
+              Change Photo
+            </button>
           </div>
+        </div>
+      </div>
 
-          {/* Security Section */}
-          <div className="bg-white border rounded-3xl p-8">
+      {/* Password Section */}
+      <div className="bg-white rounded-3xl border p-8 mb-8">
+        <h2 className="text-3xl font-bold mb-2">
+          Change Password
+        </h2>
 
-            <h2 className="text-3xl font-bold mb-6">
-              Security
-            </h2>
+        <p className="text-slate-500 mb-8">
+          Update your password to keep your account secure.
+        </p>
 
-            <div className="space-y-5">
+        <div className="grid lg:grid-cols-[1fr_300px] gap-10">
+          <div>
+            <label className="block mb-2 font-medium">
+              Current Password
+            </label>
 
-              <div>
-                <label className="block mb-2 font-medium">
-                  New Password
-                </label>
-
-                <div className="relative">
-                  <Lock
-                    size={18}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                  />
-
-                  <input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) =>
-                      setNewPassword(
-                        e.target.value
-                      )
-                    }
-                    placeholder="Enter new password"
-                    className="w-full h-14 border rounded-2xl pl-12 pr-4 outline-none focus:ring-2 focus:ring-black"
-                  />
-                </div>
-              </div>
+            <div className="relative">
+              <input
+                type={showCurrent ? "text" : "password"}
+                value={currentPassword}
+                onChange={(e) =>
+                  setCurrentPassword(e.target.value)
+                }
+                className="w-full border rounded-xl px-4 py-3"
+              />
 
               <button
-                onClick={updatePassword}
-                className="w-full h-14 bg-black text-white rounded-2xl flex items-center justify-center gap-2 hover:bg-gray-800"
+                type="button"
+                onClick={() => setShowCurrent(!showCurrent)}
+                className="absolute right-4 top-4"
               >
-                <Lock size={18} />
-                Update Password
+                {showCurrent ? <EyeOff /> : <Eye />}
               </button>
-
-              <div className="border-t pt-6">
-
-                <h3 className="font-semibold mb-2">
-                  Account Information
-                </h3>
-
-                <p className="text-gray-500">
-                  User ID:
-                </p>
-
-                <p className="text-sm break-all">
-                  {userId}
-                </p>
-
-              </div>
-
             </div>
 
+            <label className="block mb-2 mt-5 font-medium">
+              New Password
+            </label>
+
+            <div className="relative">
+              <input
+                type={showNew ? "text" : "password"}
+                value={newPassword}
+                onChange={(e) =>
+                  setNewPassword(e.target.value)
+                }
+                className="w-full border rounded-xl px-4 py-3"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowNew(!showNew)}
+                className="absolute right-4 top-4"
+              >
+                {showNew ? <EyeOff /> : <Eye />}
+              </button>
+            </div>
+
+            <label className="block mb-2 mt-5 font-medium">
+              Confirm Password
+            </label>
+
+            <div className="relative">
+              <input
+                type={showConfirm ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) =>
+                  setConfirmPassword(e.target.value)
+                }
+                className="w-full border rounded-xl px-4 py-3"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowConfirm(!showConfirm)}
+                className="absolute right-4 top-4"
+              >
+                {showConfirm ? <EyeOff /> : <Eye />}
+              </button>
+            </div>
+
+            <button
+              onClick={updatePassword}
+              className="mt-8 bg-slate-900 text-white px-8 py-3 rounded-xl hover:bg-slate-800"
+            >
+              Update Password
+            </button>
           </div>
 
-        </div>
+          <div className="bg-slate-50 rounded-3xl p-6">
+            <Lock className="mb-5 text-blue-600" />
 
+            <h3 className="font-bold text-lg mb-4">
+              Password Tips
+            </h3>
+
+            <ul className="space-y-2 text-slate-600 text-sm">
+              <li>• Use at least 8 characters</li>
+              <li>• Include uppercase and lowercase</li>
+              <li>• Include a number</li>
+              <li>• Include a special character</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Account Info */}
+      <div className="bg-white rounded-3xl border p-8">
+        <h2 className="text-3xl font-bold mb-2">
+          Account Information
+        </h2>
+
+        <p className="text-slate-500 mb-8">
+          View your account details and activity.
+        </p>
+
+        <div className="grid md:grid-cols-4 gap-6">
+          <div>
+            <Shield className="mb-3 text-slate-500" />
+            <p className="text-sm text-slate-500">User ID</p>
+            <p className="font-medium break-all">
+              {userId}
+            </p>
+          </div>
+
+          <div>
+            <User className="mb-3 text-slate-500" />
+            <p className="text-sm text-slate-500">
+              Account Type
+            </p>
+            <p className="font-medium">Admin</p>
+          </div>
+
+          <div>
+            <Calendar className="mb-3 text-slate-500" />
+            <p className="text-sm text-slate-500">
+              Member Since
+            </p>
+            <p className="font-medium">
+              {createdAt
+                ? new Date(createdAt).toLocaleDateString()
+                : "-"}
+            </p>
+          </div>
+
+          <div>
+            <Clock className="mb-3 text-slate-500" />
+            <p className="text-sm text-slate-500">
+              Status
+            </p>
+            <p className="font-medium text-green-600">
+              Active
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
