@@ -21,7 +21,7 @@ export default function ProfilePage() {
   const [createdAt, setCreatedAt] = useState("");
 
   const [avatarUrl, setAvatarUrl] = useState("");
-const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -30,6 +30,10 @@ const [uploading, setUploading] = useState(false);
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  async function removePhoto() {
+    // remove logic
+  }
 
   useEffect(() => {
     fetchProfile();
@@ -198,6 +202,13 @@ const [uploading, setUploading] = useState(false);
   className="mt-5 border px-5 py-2 rounded-xl"
 >
   {uploading ? "Uploading..." : "Add Photo"}
+</button>
+
+<button
+  onClick={removePhoto}
+  className="mt-3 border px-5 py-2 rounded-xl text-red-500"
+>
+  Remove Photo
 </button>
           </div>
         </div>
