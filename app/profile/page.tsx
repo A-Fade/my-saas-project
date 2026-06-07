@@ -20,6 +20,9 @@ export default function ProfilePage() {
   const [email, setEmail] = useState("");
   const [createdAt, setCreatedAt] = useState("");
 
+  const [avatarUrl, setAvatarUrl] = useState("");
+const [uploading, setUploading] = useState(false);
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -56,6 +59,7 @@ export default function ProfilePage() {
       setFullName(data.full_name || "");
       setEmail(data.email || "");
       setCreatedAt(data.created_at || "");
+      setAvatarUrl(data.avatar_url || "");
     }
 
     setLoading(false);
@@ -169,12 +173,32 @@ export default function ProfilePage() {
 
           <div className="flex flex-col items-center justify-center">
             <div className="w-44 h-44 rounded-3xl bg-slate-100 flex items-center justify-center">
-              <User size={80} className="text-slate-500" />
+              <div className="w-44 h-44 rounded-3xl bg-slate-100 flex items-center justify-center overflow-hidden">
+  {avatarUrl ? (
+    <img
+      src={avatarUrl}
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <User size={80} className="text-slate-500" />
+  )}
+</div>
             </div>
-
-            <button className="mt-5 border px-5 py-2 rounded-xl">
-              Change Photo
-            </button>
+<input
+  type="file"
+  accept="image/*"
+  id="avatarInput"
+  style={{ display: "none" }}
+  onChange={handleAvatarChange}
+/>
+            <button
+  onClick={() =>
+    document.getElementById("avatarInput")?.click()
+  }
+  className="mt-5 border px-5 py-2 rounded-xl"
+>
+  {uploading ? "Uploading..." : "Change Photo"}
+</button>
           </div>
         </div>
       </div>
@@ -337,4 +361,41 @@ export default function ProfilePage() {
       </div>
     </div>
   );
+
+  async function handleAvatarChange(
+  e: React.ChangeEvent<HTMLInputElement>
+) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  try {
+    setUploading(true);
+
+    const fileName = `${userId}-${Date.now()}-${file.name}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(fileName, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data } = supabase.storage
+      .from("avatars")
+      .getPublicUrl(fileName);
+
+    const publicUrl = data.publicUrl;
+
+    setAvatarUrl(publicUrl);
+
+    await supabase
+      .from("profiles")
+      .update({ avatar_url: publicUrl })
+      .eq("id", userId);
+
+  } catch (err: any) {
+    alert(err.message);
+  } finally {
+    setUploading(false);
+  }
+}
 }
