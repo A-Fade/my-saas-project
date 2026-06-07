@@ -197,7 +197,7 @@ const [uploading, setUploading] = useState(false);
   }
   className="mt-5 border px-5 py-2 rounded-xl"
 >
-  {uploading ? "Uploading..." : "Change Photo"}
+  {uploading ? "Uploading..." : "Add Photo"}
 </button>
           </div>
         </div>
