@@ -49,7 +49,7 @@ export default function Clients() {
     setLoading(false);
   }
 
- async function handleSave() {
+async function handleSave() {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!name || !phone || (!projectId && !newProjectName) || !user) {
@@ -60,9 +60,33 @@ export default function Clients() {
   setSaving(true);
 
   try {
+    // 🔥 STEP 1: FREE PLAN LIMIT CHECK (Sabse Pehle Check Hoga Taaki Faltu Projects Create Na Hon)
+    if (!editingId) {
+      const { data: profile, error: pErr } = await supabase
+        .from("profiles")
+        .select("plan")
+        .eq("id", user.id)
+        .single();
+
+      if (pErr) throw new Error("Profile fetch failed");
+
+      const { count, error: cErr } = await supabase
+        .from("clients")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
+
+      if (cErr) throw new Error("Count fetch failed");
+
+      if (profile?.plan === "free" && (count ?? 0) >= 1) {
+        toast.error("Free plan allows only 1 client. Upgrade to Pro.");
+        setSaving(false);
+        return; // Yahin se code ruk jayega
+      }
+    }
+
     let finalProjectId = projectId;
 
-    // CREATE NEW PROJECT (if needed)
+    // STEP 2: CREATE NEW PROJECT (Ab yeh safe hai kyunki limit upar check ho chuki hai)
     if (isNewProject && newProjectName) {
       const { data: nProj, error: pErr } = await supabase
         .from("projects")
@@ -79,7 +103,6 @@ export default function Clients() {
         .single();
 
       if (pErr) throw pErr;
-
       finalProjectId = nProj.id;
     } else {
       if (projectId) {
@@ -91,6 +114,7 @@ export default function Clients() {
       }
     }
 
+    // STEP 3: CLIENT PAYLOAD
     const clientPayload = {
       name: name.trim(),
       phone: phone.trim(),
@@ -98,64 +122,36 @@ export default function Clients() {
       user_id: user.id,
     };
 
-   if (!editingId) {
-  const userId = user.id;
-
-  const { data: profile, error: pErr } = await supabase
-    .from("profiles")
-    .select("plan")
-    .eq("id", userId)
-    .single();
-
-  if (pErr) {
-    toast.error("Profile fetch failed");
-    setSaving(false);
-    return;
-  }
-
-  const { count, error: cErr } = await supabase
-    .from("clients")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", userId);
-
-  if (cErr) {
-    toast.error("Count fetch failed");
-    setSaving(false);
-    return;
-  }
-
-  if (profile?.plan === "free" && (count ?? 0) >= 1) {
-    toast.error("Free plan allows only 1 client");
-    setSaving(false);
-    return;
-  }
-}
-    // INSERT / UPDATE
+    // STEP 4: INSERT / UPDATE
     if (editingId) {
-      await supabase
+      const { error } = await supabase
         .from("clients")
         .update(clientPayload)
         .eq("id", editingId)
         .eq("user_id", user.id);
 
+      if (error) throw error;
       toast.success("Client Updated");
     } else {
-      await supabase
+      const { error } = await supabase
         .from("clients")
         .insert([clientPayload]);
 
+      if (error) throw error;
       toast.success("Client Saved");
     }
 
+    // Form reset aur data refresh aapke function ke mutabiq
     resetForm();
-    fetchAll(user.id);
+    fetchAll(user.id); 
 
   } catch (err: any) {
-    toast.error(err.message);
+    toast.error(err.message || "An error occurred");
   } finally {
     setSaving(false);
   }
 }
+
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this client?")) return;
