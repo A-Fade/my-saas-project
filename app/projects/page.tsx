@@ -69,7 +69,7 @@ export default function Projects() {
       const { count } = await supabase
         .from("projects")
         .select("*", { count: "exact", head: true })
-        .eq("id", user.id)
+        .eq("user_id", user.id);
 
       if ((count || 0) >= 1) {
         toast.error(
