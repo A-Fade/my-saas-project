@@ -10,282 +10,197 @@ export default function PricingPage() {
       {/* Navbar */}
 
       <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-
-          {/* Logo */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
 
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-[#0B1533] flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <rect x="3" y="3" width="7" height="7" rx="1" strokeWidth="2" />
-                <rect x="14" y="3" width="7" height="7" rx="1" strokeWidth="2" />
-                <rect x="3" y="14" width="7" height="7" rx="1" strokeWidth="2" />
-                <rect x="14" y="14" width="7" height="7" rx="1" strokeWidth="2" />
-              </svg>
+
+            <div className="w-10 h-10 bg-[#0B1533] rounded-xl flex items-center justify-center text-white font-bold">
+              B
             </div>
 
-            <span className="text-4xl font-bold text-[#0B1533]">
-              Builder Pro
+            <span className="text-2xl md:text-3xl font-bold text-[#0B1533]">
+              BuilderPro
             </span>
+
           </Link>
 
-          {/* Desktop Menu */}
-
-          <nav className="hidden lg:flex items-center gap-12">
+          <nav className="hidden md:flex items-center gap-8">
 
             <Link
-              href="landing"
-              className="text-sm font-bold tracking-[3px] text-slate-500 hover:text-[#0B1533]"
+              href="/"
+              className="font-semibold text-slate-600 hover:text-[#0B1533]"
             >
-              HOME
+              Home
             </Link>
 
             <Link
               href="/pricing"
-              className="text-sm font-bold tracking-[3px] text-slate-500 hover:text-[#0B1533]"
+              className="font-semibold text-[#0B1533]"
             >
-              PRICING
+              Pricing
             </Link>
-            
+
           </nav>
 
-          {/* CTA */}
+          <div className="flex items-center gap-3">
 
-          <Link
-            href="/register"
-            className="bg-[#0B1533] hover:bg-[#111f47] text-white px-10 py-4 rounded-2xl font-bold tracking-[2px] shadow-lg transition"
-          >
-            GET STARTED
-          </Link>
+            <Link
+              href="/login"
+              className="text-slate-600 font-medium"
+            >
+              Login
+            </Link>
+
+            <Link
+              href="/register"
+              className="bg-[#0B1533] text-white px-5 py-3 rounded-xl font-semibold"
+            >
+              Get Started
+            </Link>
+
+          </div>
 
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero */}
 
-      <section className="max-w-7xl mx-auto px-6 pt-24 pb-10">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-20">
 
         <div className="text-center">
 
-          <div className="inline-flex items-center gap-2 border border-slate-200 rounded-full px-6 py-3">
+          <span className="border rounded-full px-5 py-2 text-sm font-bold text-[#0B1533]">
+            PRICING
+          </span>
 
-            <span className="text-[#0B1533] font-bold text-xs tracking-[4px]">
-              PRICING
-            </span>
-
-          </div>
-
-          <h1 className="text-6xl lg:text-8xl font-black text-[#0B1533] mt-10 leading-none">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-[#0B1533] mt-8">
             Simple Pricing
           </h1>
 
-          <h2 className="text-6xl lg:text-8xl font-black text-slate-300 leading-none mt-2">
+          <h2 className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-300">
             For Every Builder
           </h2>
 
-          <p className="max-w-3xl mx-auto text-slate-500 text-xl mt-10 leading-relaxed">
-            Choose the perfect Builder Pro plan for your business.
-            Upgrade anytime as your company grows and unlock more powerful features.
+          <p className="max-w-2xl mx-auto text-slate-500 mt-8 text-lg">
+            Choose the perfect BuilderPro plan and grow your business faster.
           </p>
 
-          {/* Billing Toggle */}
-
-          <div className="flex justify-center mt-12">
-
-            <div className="border border-slate-200 rounded-full p-2 flex bg-white shadow-sm">
-
-              <button className="bg-[#0B1533] text-white px-10 py-3 rounded-full font-bold">
-                Monthly
-              </button>
-
-              <button className="px-10 py-3 font-bold text-slate-500">
-                Yearly (Save 20%)
-              </button>
-
-            </div>
-
-          </div>
-
         </div>
 
-        {/* Pricing Cards Start */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-20">
 
-        <div className="grid lg:grid-cols-3 gap-8 mt-24">
+          {/* Starter */}
 
-          {/* STARTER */}
+          <div className="border rounded-3xl p-8">
 
-          <div className="bg-white border border-slate-200 rounded-[32px] p-10">
+            <h3 className="text-3xl font-bold text-[#0B1533]">
+              Starter
+            </h3>
 
-            <div className="text-center">
+            <p className="text-slate-500 mt-2">
+              Perfect for beginners
+            </p>
 
-              <h3 className="text-[#0B1533] font-black text-4xl">
-                STARTER
-              </h3>
+            <div className="mt-6">
+              <span className="text-5xl font-black">₹0</span>
+              <span className="text-slate-500">/month</span>
+            </div>
 
-              <p className="text-slate-500 mt-4">
-                Perfect for beginners and small projects
-              </p>
+            <Link
+              href="/register"
+              className="block text-center mt-8 border-2 border-[#0B1533] py-3 rounded-xl font-semibold"
+            >
+              Get Started
+            </Link>
 
-              <div className="mt-10">
-                <span className="text-7xl font-black text-[#0B1533]">
-                  ₹0
-                </span>
+            <div className="space-y-4 mt-8">
 
-                <span className="text-slate-500 text-3xl ml-2">
-                  /month
-                </span>
-              </div>
-
-              <div className="inline-block bg-slate-100 px-5 py-2 rounded-xl mt-5 text-slate-600 font-medium">
-                Free Forever
-              </div>
-
-              <button className="w-full mt-10 border-2 border-[#0B1533] text-[#0B1533] py-4 rounded-2xl font-bold hover:bg-slate-50 transition">
-                Get Started
-              </button>
+              <Feature text="1 Website" />
+              <Feature text="5 Pages" />
+              <Feature text="500 MB Storage" />
+              <Feature text="Basic Templates" />
+              <Feature text="SSL Certificate" />
+              <Feature text="Community Support" />
 
             </div>
 
-            <div className="border-t mt-10 pt-10">
+          </div>          {/* Pro */}
 
-              <h4 className="font-bold text-[#0B1533] mb-6">
-                What's Included:
-              </h4>
-
-              <div className="space-y-5">
-
-                <Feature text="1 Website" />
-                <Feature text="5 Pages" />
-                <Feature text="500 MB Storage" />
-                <Feature text="Basic Templates" />
-                <Feature text="Community Support" />
-                <Feature text="SSL Certificate" />
-
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* PRO CARD START */}
-                    {/* PRO */}
-
-          <div className="bg-white border-2 border-[#0B1533] rounded-[32px] p-10 relative shadow-xl">
+          <div className="border-2 border-[#0B1533] rounded-3xl p-8 relative shadow-xl">
 
             <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-              <div className="bg-[#0B1533] text-white px-6 py-2 rounded-xl font-bold">
+              <span className="bg-[#0B1533] text-white px-5 py-2 rounded-lg text-sm font-semibold">
                 Most Popular
-              </div>
+              </span>
             </div>
 
-            <div className="text-center pt-4">
+            <h3 className="text-3xl font-bold text-[#0B1533] mt-4">
+              Pro
+            </h3>
 
-              <h3 className="text-[#0B1533] font-black text-4xl">
-                PRO
-              </h3>
+            <p className="text-slate-500 mt-2">
+              Best for growing businesses
+            </p>
 
-              <p className="text-slate-500 mt-4">
-                Ideal for growing businesses
-              </p>
-
-              <div className="mt-10">
-                <span className="text-7xl font-black text-[#0B1533]">
-                  ₹499
-                </span>
-
-                <span className="text-slate-500 text-3xl ml-2">
-                  /month
-                </span>
-              </div>
-
-              <div className="inline-block bg-slate-100 px-5 py-2 rounded-xl mt-5 text-slate-600 font-medium">
-                Billed Monthly
-              </div>
-
-              <button className="w-full mt-10 bg-[#0B1533] hover:bg-[#111f47] text-white py-4 rounded-2xl font-bold transition">
-                Start Pro Trial
-              </button>
-
+            <div className="mt-6">
+              <span className="text-5xl font-black">₹499</span>
+              <span className="text-slate-500">/month</span>
             </div>
 
-            <div className="border-t mt-10 pt-10">
+            <Link
+              href="/register"
+              className="block text-center mt-8 bg-[#0B1533] text-white py-3 rounded-xl font-semibold"
+            >
+              Start Pro Trial
+            </Link>
 
-              <h4 className="font-bold text-[#0B1533] mb-6">
-                Everything in Starter, plus:
-              </h4>
+            <div className="space-y-4 mt-8">
 
-              <div className="space-y-5">
-
-                <Feature text="10 Websites" />
-                <Feature text="Unlimited Pages" />
-                <Feature text="10 GB Storage" />
-                <Feature text="Premium Templates" />
-                <Feature text="Priority Support" />
-                <Feature text="Custom Domain" />
-                <Feature text="Remove BuilderPro Branding" />
-
-              </div>
+              <Feature text="10 Websites" />
+              <Feature text="Unlimited Pages" />
+              <Feature text="10 GB Storage" />
+              <Feature text="Premium Templates" />
+              <Feature text="Custom Domain" />
+              <Feature text="Priority Support" />
+              <Feature text="Remove BuilderPro Branding" />
 
             </div>
 
           </div>
 
-          {/* BUSINESS */}
+          {/* Business */}
 
-          <div className="bg-white border border-slate-200 rounded-[32px] p-10">
+          <div className="border rounded-3xl p-8">
 
-            <div className="text-center">
+            <h3 className="text-3xl font-bold text-[#0B1533]">
+              Business
+            </h3>
 
-              <h3 className="text-[#0B1533] font-black text-4xl">
-                BUSINESS
-              </h3>
+            <p className="text-slate-500 mt-2">
+              For agencies and large teams
+            </p>
 
-              <p className="text-slate-500 mt-4">
-                For large teams and advanced needs
-              </p>
-
-              <div className="mt-10">
-                <span className="text-7xl font-black text-[#0B1533]">
-                  ₹999
-                </span>
-
-                <span className="text-slate-500 text-3xl ml-2">
-                  /month
-                </span>
-              </div>
-
-              <div className="inline-block bg-slate-100 px-5 py-2 rounded-xl mt-5 text-slate-600 font-medium">
-                Billed Monthly
-              </div>
-
-              <button className="w-full mt-10 border-2 border-[#0B1533] text-[#0B1533] py-4 rounded-2xl font-bold hover:bg-slate-50 transition">
-                Contact Sales
-              </button>
-
+            <div className="mt-6">
+              <span className="text-5xl font-black">₹999</span>
+              <span className="text-slate-500">/month</span>
             </div>
 
-            <div className="border-t mt-10 pt-10">
+            <Link
+              href="/contact"
+              className="block text-center mt-8 border-2 border-[#0B1533] py-3 rounded-xl font-semibold"
+            >
+              Contact Sales
+            </Link>
 
-              <h4 className="font-bold text-[#0B1533] mb-6">
-                Everything in Pro, plus:
-              </h4>
+            <div className="space-y-4 mt-8">
 
-              <div className="space-y-5">
-
-                <Feature text="Unlimited Websites" />
-                <Feature text="Unlimited Storage" />
-                <Feature text="Team Collaboration" />
-                <Feature text="Advanced Analytics" />
-                <Feature text="White Label Solution" />
-                <Feature text="Dedicated Manager" />
-                <Feature text="API Access" />
-
-              </div>
+              <Feature text="Unlimited Websites" />
+              <Feature text="Unlimited Storage" />
+              <Feature text="Team Collaboration" />
+              <Feature text="Advanced Analytics" />
+              <Feature text="White Label" />
+              <Feature text="Dedicated Manager" />
+              <Feature text="API Access" />
 
             </div>
 
@@ -293,24 +208,18 @@ export default function PricingPage() {
 
         </div>
 
-        {/* Bottom Trust Section */}
+        {/* Trust Section */}
 
-        <div className="flex justify-center mt-20">
+        <div className="mt-16 text-center">
 
-          <div className="flex flex-wrap justify-center gap-4 text-slate-500 font-medium">
+          <div className="flex flex-wrap justify-center gap-4 text-slate-500">
 
             <span>🛡️ 30-Day Money Back Guarantee</span>
-
             <span>•</span>
-
             <span>Cancel Anytime</span>
-
             <span>•</span>
-
             <span>No Hidden Fees</span>
-
             <span>•</span>
-
             <span>24/7 Support</span>
 
           </div>
@@ -319,80 +228,98 @@ export default function PricingPage() {
 
       </section>
 
-      {/* FAQ SECTION START */}
-            {/* FAQ Section */}
+      {/* FAQ Section */}
+            <section className="bg-slate-50 py-20">
 
-      <section className="bg-[#0B1533] mt-24 rounded-t-[60px]">
-        <div className="max-w-6xl mx-auto px-6 py-24">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
 
-          <h2 className="text-center text-white text-5xl font-black mb-16">
+          <h2 className="text-3xl md:text-5xl font-black text-center text-[#0B1533] mb-14">
             Frequently Asked Questions
           </h2>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 gap-6">
 
-            <div className="bg-white/10 border border-white/10 rounded-3xl p-8">
-              <h3 className="text-white text-xl font-bold">
-                Can I upgrade later?
+            <div className="bg-white border rounded-2xl p-6">
+              <h3 className="font-bold text-lg text-[#0B1533]">
+                Can I upgrade my plan later?
               </h3>
 
-              <p className="text-slate-300 mt-4">
-                Yes, you can upgrade or downgrade your plan at any time.
+              <p className="text-slate-500 mt-3">
+                Yes. You can upgrade or downgrade your BuilderPro plan anytime.
               </p>
             </div>
 
-            <div className="bg-white/10 border border-white/10 rounded-3xl p-8">
-              <h3 className="text-white text-xl font-bold">
-                Do you offer refunds?
+            <div className="bg-white border rounded-2xl p-6">
+              <h3 className="font-bold text-lg text-[#0B1533]">
+                Is there a free plan available?
               </h3>
 
-              <p className="text-slate-300 mt-4">
-                Yes, we provide a 30-day money back guarantee.
+              <p className="text-slate-500 mt-3">
+                Yes. Our Starter plan is completely free to use.
               </p>
             </div>
 
-            <div className="bg-white/10 border border-white/10 rounded-3xl p-8">
-              <h3 className="text-white text-xl font-bold">
+            <div className="bg-white border rounded-2xl p-6">
+              <h3 className="font-bold text-lg text-[#0B1533]">
+                Do you provide refunds?
+              </h3>
+
+              <p className="text-slate-500 mt-3">
+                Yes. We offer a 30-day money back guarantee on paid plans.
+              </p>
+            </div>
+
+            <div className="bg-white border rounded-2xl p-6">
+              <h3 className="font-bold text-lg text-[#0B1533]">
                 Can I connect my custom domain?
               </h3>
 
-              <p className="text-slate-300 mt-4">
-                Yes, Pro and Business plans support custom domains.
+              <p className="text-slate-500 mt-3">
+                Yes. Pro and Business plans support custom domains.
               </p>
             </div>
-
-            <div className="bg-white/10 border border-white/10 rounded-3xl p-8">
-              <h3 className="text-white text-xl font-bold">
-                Is there a free plan?
-              </h3>
-
-              <p className="text-slate-300 mt-4">
-                Yes, Builder Pro includes a free starter plan.
-              </p>
-            </div>
-
-          </div>
-
-          {/* CTA */}
-
-          <div className="text-center mt-20">
-
-            <h2 className="text-5xl font-black text-white">
-              Ready To Build Faster?
-            </h2>
-
-            <p className="text-slate-300 text-xl mt-6 max-w-2xl mx-auto">
-              Join Builder Pro today and start creating professional websites
-              for your clients in minutes.
-            </p>
-
-            <button className="mt-10 bg-white text-[#0B1533] px-10 py-5 rounded-2xl font-bold text-lg hover:scale-105 transition">
-              Get Started Now
-            </button>
 
           </div>
 
         </div>
+
+      </section>
+
+      {/* CTA Section */}
+
+      <section className="bg-[#0B1533] py-24">
+
+        <div className="max-w-4xl mx-auto text-center px-4">
+
+          <h2 className="text-4xl md:text-6xl font-black text-white">
+            Ready To Build Your Website?
+          </h2>
+
+          <p className="text-slate-300 mt-6 text-lg">
+            Join thousands of builders using BuilderPro to create
+            professional websites in minutes.
+          </p>
+
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
+
+            <Link
+              href="/register"
+              className="bg-white text-[#0B1533] px-8 py-4 rounded-xl font-bold"
+            >
+              Start Free
+            </Link>
+
+            <Link
+              href="/contact"
+              className="border border-white text-white px-8 py-4 rounded-xl font-bold"
+            >
+              Contact Sales
+            </Link>
+
+          </div>
+
+        </div>
+
       </section>
 
     </div>
@@ -405,7 +332,7 @@ function Feature({ text }: { text: string }) {
   return (
     <div className="flex items-center gap-3">
 
-      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
         <Check className="w-4 h-4 text-green-600" />
       </div>
 
