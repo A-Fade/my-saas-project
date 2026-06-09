@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Topbar from "@/app/components/Topbar";
 import Sidebar from "@/app/components/Sidebar";
-import { Users, Phone, Banknote, Briefcase, Edit3, Plus, UserPlus, ArrowRight, Trash2 } from "lucide-react";
+import { Users, Phone, Banknote, Briefcase, Edit3, Trash2 } from "lucide-react";
 
 export default function Workers() {
   const [workers, setWorkers] = useState<any[]>([]);
@@ -34,94 +34,112 @@ export default function Workers() {
 
   async function fetchAll(userId: string) {
     setLoading(true);
-    const { data: wData } = await supabase.from("workers").select("*").eq("user_id", userId).order("id", { ascending: false });
-    const { data: pData } = await supabase.from("projects").select("*").eq("user_id", userId);
-    const merged = (wData || []).map((worker: any) => {
-      const project = (pData || []).find((p: any) => String(p.id) === String(worker.project_id));
-      return { ...worker, projects: project || null };
-    });
-    setWorkers(merged);
-    setProjects(pData || []);
-    setLoading(false);
-  }
-
- async function handleSave() {
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!name || !phone || !salary || !projectId || !user) {
-    toast.error("Fill all fields");
-    return;
-  }
-
-  setSaving(true);
-
-  const payload = {
-    name: name.trim(),
-    phone: phone.trim(),
-    salary: Number(salary),
-    project_id: projectId,
-    user_id: user.id,
-  };
-
-  // ✅ FREE PLAN LIMIT CHECK (ONLY INSERT)
-  if (!editingId) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("plan")
-      .eq("id", user.id)
-      .single();
-
-    if (profile?.plan === "free") {
-      const { count } = await supabase
-        .from("workers")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id);
-        
-
-      if ((count || 0) >= 2) {
-        toast.error("Free plan allows only 2 workers. Upgrade required.");
-        setSaving(false);
-        return;
-      }
+    try {
+      const { data: wData } = await supabase.from("workers").select("*").eq("user_id", userId).order("id", { ascending: false });
+      const { data: pData } = await supabase.from("projects").select("*").eq("user_id", userId);
+      const merged = (wData || []).map((worker: any) => {
+        const project = (pData || []).find((p: any) => String(p.id) === String(worker.project_id));
+        return { ...worker, projects: project || null };
+      });
+      setWorkers(merged);
+      setProjects(pData || []);
+    } catch (err) {
+      toast.error("Failed to load data");
+    } finally {
+      setLoading(false);
     }
   }
 
-  if (editingId) {
-    const { error } = await supabase
-      .from("workers")
-      .update(payload)
-      .eq("id", editingId);
+  async function handleSave() {
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (error) toast.error(error.message);
-    else toast.success("Worker updated");
+    if (!name || !phone || !salary || !projectId || !user) {
+      toast.error("Fill all fields");
+      return;
+    }
 
-  } else {
-    const { error } = await supabase
-      .from("workers")
-      .insert([payload]);
+    setSaving(true);
 
-    if (error) toast.error(error.message);
-    else toast.success("Worker added");
+    const payload = {
+      name: name.trim(),
+      phone: phone.trim(),
+      salary: Number(salary),
+      project_id: projectId,
+      user_id: user.id,
+    };
+
+    try {
+      // ✅ FREE PLAN LIMIT CHECK
+      if (!editingId) {
+        const { data: profile, error: pErr } = await supabase
+          .from("profiles")
+          .select("plan")
+          .eq("id", user.id)
+          .single();
+
+        if (pErr) throw new Error("Profile fetch failed");
+
+        if (profile?.plan === "free") {
+          const { count, error: cErr } = await supabase
+            .from("workers")
+            .select("*", { count: "exact", head: true })
+            .eq("user_id", user.id);
+
+          if (cErr) throw new Error("Count fetch failed");
+
+          if ((count || 0) >= 2) {
+            toast.error("Free plan allows only 2 workers. Upgrade required.");
+            setSaving(false);
+            return;
+          }
+        }
+      }
+
+      if (editingId) {
+        // FIXED: Added security layer .eq("user_id", user.id)
+        const { error } = await supabase
+          .from("workers")
+          .update(payload)
+          .eq("id", editingId)
+          .eq("user_id", user.id);
+
+        if (error) throw error;
+        toast.success("Worker updated");
+      } else {
+        const { error } = await supabase
+          .from("workers")
+          .insert([payload]);
+
+        if (error) throw error;
+        toast.success("Worker added");
+      }
+
+      resetForm();
+      fetchAll(user.id);
+
+    } catch (error: any) {
+      toast.error(error.message || "An error occurred");
+    } finally {
+      setSaving(false);
+    }
   }
-
-  resetForm();
-  fetchAll(user.id);
-  setSaving(false);
-}
-
-  // ADDED DELETE FUNCTION
   async function handleDelete(id: any) {
     if (!confirm("Are you sure you want to delete this worker?")) return;
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    const { error } = await supabase.from("workers").delete().eq("id", id).eq("user_id", user.id);
+      const { error } = await supabase
+        .from("workers")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
 
-    if (error) {
-      toast.error("Delete failed: " + error.message);
-    } else {
+      if (error) throw error;
       toast.success("Worker removed");
       fetchAll(user.id);
+    } catch (err: any) {
+      toast.error("Delete failed: " + err.message);
     }
   }
 
@@ -210,40 +228,38 @@ export default function Workers() {
 
           {/* Workers Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {workers.map(w => (
-              <div key={w.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md transition-all group">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center text-slate-600 group-hover:bg-slate-900 group-hover:text-white transition-colors">
-                    <UserPlus size={20}/>
-                  </div>
-                  <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded-md">Active</span>
-                </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-1">{w.name}</h3>
-                <p className="text-sm text-slate-500 font-medium mb-6 flex items-center gap-1.5"><Phone size={14}/> {w.phone}</p>
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6">
-                  <div className="flex justify-between items-center mb-3">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current Site</p>
-                    <Briefcase size={12} className="text-slate-400" />
-                  </div>
-                  <p className="font-bold text-slate-700 text-sm truncate uppercase tracking-tight">{w.projects?.name || 'Unassigned'}</p>
-                  <div className="mt-3 pt-3 border-t border-slate-200/60 flex justify-between items-end">
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Daily Salary</p>
-                      <p className="text-xl font-bold text-slate-900 mt-0.5">₹{Number(w.salary).toLocaleString()}</p>
+            {workers.map((w) => (
+              <div key={w.id} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
+                <div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="bg-slate-100 p-2 rounded-xl text-slate-700">
+                      <Users size={20} />
                     </div>
-                    <p className="text-[9px] font-bold text-slate-400 italic mb-1">per day</p>
+                    <h3 className="font-bold text-lg text-slate-900 truncate">{w.name}</h3>
+                  </div>
+                  <div className="space-y-2 text-sm text-slate-600 font-medium mb-6">
+                    <div className="flex items-center gap-2">
+                      <Phone size={14} className="text-slate-400" />
+                      <span>{w.phone}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Banknote size={14} className="text-slate-400" />
+                      <span>₹{w.salary} / day</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Briefcase size={14} className="text-slate-400" />
+                      <span className="truncate text-slate-800 font-semibold">
+                        {w.projects ? w.projects.name : "Unassigned"}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                {/* ACTIONS UPDATED */}
-                <div className="grid grid-cols-3 gap-2">
-                  <button onClick={() => editWorker(w)} className="bg-slate-50 border border-slate-200 text-slate-700 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center gap-1">
-                    <Edit3 size={12}/> Edit
+                <div className="flex gap-2 pt-4 border-t border-slate-100">
+                  <button onClick={() => editWorker(w)} className="flex-1 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 border border-slate-100">
+                    <Edit3 size={14} /> Edit
                   </button>
-                  <button onClick={() => handleDelete(w.id)} className="bg-slate-50 border border-slate-200 text-red-600 py-2.5 rounded-xl font-bold text-xs hover:bg-red-50 hover:border-red-100 transition-all flex items-center justify-center gap-1">
-                    <Trash2 size={12}/> Delete
-                  </button>
-                  <button onClick={() => w.project_id && router.push(`/projects/${w.project_id}`)} className="bg-slate-900 text-white py-2.5 rounded-xl font-bold text-xs hover:bg-slate-800 transition-all flex items-center justify-center gap-1">
-                    Site <ArrowRight size={12}/>
+                  <button onClick={() => handleDelete(w.id)} className="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-xl text-xs transition-all flex items-center justify-center border border-red-100">
+                    <Trash2 size={14} />
                   </button>
                 </div>
               </div>
