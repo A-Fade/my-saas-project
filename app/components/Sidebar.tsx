@@ -67,11 +67,13 @@ export default function Sidebar() {
       path: "/support",
       icon: <LifeBuoy size={20} />,
     },
+
     {
-  name: "Profile",
-  path: "/profile",
-  icon: <User size={20} />,
-},
+      name: "Profile",
+      path: "/profile",
+      icon: <User size={20} />,
+     },
+     
   ];
 
   return (
