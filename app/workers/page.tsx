@@ -45,27 +45,68 @@ export default function Workers() {
     setLoading(false);
   }
 
-  async function handleSave() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!name || !phone || !salary || !projectId || !user) {
-      toast.error("Fill all fields");
-      return;
-    }
-    setSaving(true);
-    const payload = { name: name.trim(), phone: phone.trim(), salary: Number(salary), project_id: projectId, user_id: user.id };
-    if (editingId) {
-      const { error } = await supabase.from("workers").update(payload).eq("id", editingId);
-      if (error) toast.error(error.message);
-      else toast.success("Worker updated");
-    } else {
-      const { error } = await supabase.from("workers").insert([payload]);
-      if (error) toast.error(error.message);
-      else toast.success("Worker added");
-    }
-    resetForm();
-    fetchAll(user.id);
-    setSaving(false);
+ async function handleSave() {
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!name || !phone || !salary || !projectId || !user) {
+    toast.error("Fill all fields");
+    return;
   }
+
+  setSaving(true);
+
+  const payload = {
+    name: name.trim(),
+    phone: phone.trim(),
+    salary: Number(salary),
+    project_id: projectId,
+    user_id: user.id,
+  };
+
+  // ✅ FREE PLAN LIMIT CHECK (ONLY INSERT)
+  if (!editingId) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("plan")
+      .eq("user_id", user.id)
+      .single();
+
+    if (profile?.plan === "free") {
+      const { count } = await supabase
+        .from("workers")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
+
+      if ((count || 0) >= 2) {
+        toast.error("Free plan allows only 2 workers. Upgrade required.");
+        setSaving(false);
+        return;
+      }
+    }
+  }
+
+  if (editingId) {
+    const { error } = await supabase
+      .from("workers")
+      .update(payload)
+      .eq("id", editingId);
+
+    if (error) toast.error(error.message);
+    else toast.success("Worker updated");
+
+  } else {
+    const { error } = await supabase
+      .from("workers")
+      .insert([payload]);
+
+    if (error) toast.error(error.message);
+    else toast.success("Worker added");
+  }
+
+  resetForm();
+  fetchAll(user.id);
+  setSaving(false);
+}
 
   // ADDED DELETE FUNCTION
   async function handleDelete(id: any) {

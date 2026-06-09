@@ -61,7 +61,7 @@ export default function Projects() {
     const { data: profile } = await supabase
       .from("profiles")
       .select("plan")
-      .eq("id", user.id)
+      .eq("user_id", user.id)
       .single();
 
     if (profile?.plan === "free") {
@@ -103,10 +103,10 @@ export default function Projects() {
   resetForm();
   fetchProjects(user.id);
   setSaving(false);
-}
+}                                                                                                                                                        
   function handleEdit(p: any) {
     setName(p.name);
-    setLocation(p.location);
+    setLocation(p.location);                                                                   
     setStatus(p.status);
     setEditingId(p.id);
     window.scrollTo({ top: 0, behavior: "smooth" });

@@ -186,10 +186,10 @@ export default function PricingPage() {
             </div>
 
             <Link
-              href="/contact"
+              href=""
               className="block text-center mt-8 border-2 border-[#0B1533] py-3 rounded-xl font-semibold"
             >
-              Contact Sales
+              Get Started
             </Link>
 
             <div className="space-y-4 mt-8">
