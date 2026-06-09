@@ -115,11 +115,11 @@ export default function PricingPage() {
 
             <div className="space-y-4 mt-8">
 
-              <Feature text="1 Website" />
-              <Feature text="5 Pages" />
-              <Feature text="500 MB Storage" />
-              <Feature text="Basic Templates" />
-              <Feature text="SSL Certificate" />
+              <Feature text="1 Project" />
+              <Feature text="5 Workers" />
+              <Feature text="5 Clients" />
+              <Feature text="Basic Payment Tracking" />
+              <Feature text="Basic Dashboard" />
               <Feature text="Community Support" />
 
             </div>
@@ -156,13 +156,13 @@ export default function PricingPage() {
 
             <div className="space-y-4 mt-8">
 
-              <Feature text="10 Websites" />
-              <Feature text="Unlimited Pages" />
-              <Feature text="10 GB Storage" />
-              <Feature text="Premium Templates" />
-              <Feature text="Custom Domain" />
+              <Feature text="Unlimited Projects" />
+              <Feature text="Unlimited Workers" />
+              <Feature text="Unlimited Clients" />
+              <Feature text="Payment Tracking" />
+              <Feature text="Reports" />
               <Feature text="Priority Support" />
-              <Feature text="Remove BuilderPro Branding" />
+            
 
             </div>
 
@@ -194,13 +194,12 @@ export default function PricingPage() {
 
             <div className="space-y-4 mt-8">
 
-              <Feature text="Unlimited Websites" />
-              <Feature text="Unlimited Storage" />
-              <Feature text="Team Collaboration" />
+              <Feature text="Everything in Pro" />
+              <Feature text="Multi Company Support" />
+              <Feature text="Team Permissions" />
               <Feature text="Advanced Analytics" />
-              <Feature text="White Label" />
-              <Feature text="Dedicated Manager" />
-              <Feature text="API Access" />
+              <Feature text="Pro Dashboard" />
+             
 
             </div>
 

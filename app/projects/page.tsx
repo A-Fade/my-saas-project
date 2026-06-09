@@ -38,29 +38,72 @@ export default function Projects() {
     setLoading(false);
   }
 
-  async function handleSave() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!name || !location || !status || !user) {
-      toast.error("Fill all fields");
-      return;
-    }
-    setSaving(true);
-    const payload = { name, location, status, user_id: user.id };
+ async function handleSave() {
+  const { data: { user } } = await supabase.auth.getUser();
 
-    if (editingId) {
-      const { error } = await supabase.from("projects").update(payload).eq("id", editingId);
-      if (error) toast.error("Update failed");
-      else toast.success("Project updated");
-    } else {
-      const { error } = await supabase.from("projects").insert([payload]);
-      if (error) toast.error("Add failed");
-      else toast.success("Project added");
-    }
-    resetForm();
-    fetchProjects(user.id);
-    setSaving(false);
+  if (!name || !location || !status || !user) {
+    toast.error("Fill all fields");
+    return;
   }
 
+  setSaving(true);
+
+  const payload = {
+    name,
+    location,
+    status,
+    user_id: user.id,
+  };
+
+  // FREE PLAN LIMIT CHECK
+  if (!editingId) {
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("plan")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.plan === "free") {
+
+      const { count } = await supabase
+        .from("projects")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
+
+      if ((count || 0) >= 1) {
+        toast.error(
+          "Free Plan allows only 1 project. Upgrade to Pro."
+        );
+        setSaving(false);
+        return;
+      }
+    }
+  }
+
+  if (editingId) {
+    const { error } = await supabase
+      .from("projects")
+      .update(payload)
+      .eq("id", editingId);
+
+    if (error) toast.error("Update failed");
+    else toast.success("Project updated");
+
+  } else {
+
+    const { error } = await supabase
+      .from("projects")
+      .insert([payload]);
+
+    if (error) toast.error("Add failed");
+    else toast.success("Project added");
+  }
+
+  resetForm();
+  fetchProjects(user.id);
+  setSaving(false);
+}
   function handleEdit(p: any) {
     setName(p.name);
     setLocation(p.location);
