@@ -68,14 +68,14 @@ export default function Workers() {
     const { data: profile } = await supabase
       .from("profiles")
       .select("plan")
-      .eq("user_id", user.id)
+      .eq("id", user.id)
       .single();
 
     if (profile?.plan === "free") {
       const { count } = await supabase
         .from("workers")
         .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id);
+        .eq("id", user.id)
 
       if ((count || 0) >= 2) {
         toast.error("Free plan allows only 2 workers. Upgrade required.");
