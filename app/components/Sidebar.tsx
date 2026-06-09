@@ -11,7 +11,8 @@ import {
   CreditCard, 
   UserPlus, // ✅ Naya icon clients ke liye
   LifeBuoy,
-  User
+  User,
+  Gem
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -52,7 +53,7 @@ export default function Sidebar() {
     {
       name: "Pricing",
       path: "/pricing",
-      icon: <LifeBuoy size={20} />,
+      icon: <Gem size={20} />
     },
 
     {
