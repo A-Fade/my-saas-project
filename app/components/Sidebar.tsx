@@ -48,6 +48,13 @@ export default function Sidebar() {
       path: "/workers",
       icon: <Users size={20} />,
     },
+
+    {
+      name: "Pricing",
+      path: "/pricing",
+      icon: <LifeBuoy size={20} />,
+    },
+
     {
       name: "Payments",
       path: "/payments",
