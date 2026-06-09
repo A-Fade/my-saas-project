@@ -39,6 +39,13 @@ export default function PricingPage() {
           <nav className="hidden lg:flex items-center gap-12">
 
             <Link
+              href="landing"
+              className="text-sm font-bold tracking-[3px] text-slate-500 hover:text-[#0B1533]"
+            >
+              HOME
+            </Link>
+
+            <Link
               href="/pricing"
               className="text-sm font-bold tracking-[3px] text-slate-500 hover:text-[#0B1533]"
             >
@@ -46,21 +53,21 @@ export default function PricingPage() {
             </Link>
 
             <Link
-              href="/features"
+              href="features"
               className="text-sm font-bold tracking-[3px] text-slate-500 hover:text-[#0B1533]"
             >
               FEATURES
             </Link>
 
             <Link
-              href="/how-it-works"
+              href="how-it-works"
               className="text-sm font-bold tracking-[3px] text-slate-500 hover:text-[#0B1533]"
             >
               HOW IT WORKS
             </Link>
 
             <Link
-              href="/faq"
+              href="faq"
               className="text-sm font-bold tracking-[3px] text-slate-500 hover:text-[#0B1533]"
             >
               FAQ
