@@ -116,8 +116,8 @@ export default function PricingPage() {
             <div className="space-y-4 mt-8">
 
               <Feature text="1 Project" />
-              <Feature text="5 Workers" />
-              <Feature text="5 Clients" />
+              <Feature text="2 Workers" />
+              <Feature text="1 Clients" />
               <Feature text="Basic Payment Tracking" />
               <Feature text="Basic Dashboard" />
               <Feature text="Community Support" />
