@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { Menu, X, LayoutDashboard, FolderKanban, Users, LogOut, Mail, CreditCard, UserCircle, MessageCircle, User } from "lucide-react";
+import { Menu, X, LayoutDashboard, FolderKanban, Users, LogOut, Mail, CreditCard, UserCircle, MessageCircle, User, Gem } from "lucide-react";
 import Link from "next/link";
 
 export default function Topbar() {
@@ -94,14 +94,17 @@ export default function Topbar() {
             <Link href="/projects" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl font-bold text-slate-700">
               <FolderKanban size={22} className="text-blue-600" /> Projects
             </Link>
+            <Link href="/clients" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl font-bold text-slate-700">
+              <UserCircle size={22} className="text-blue-600" /> Clients
+            </Link>
             <Link href="/workers" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl font-bold text-slate-700">
               <Users size={22} className="text-blue-600" /> Workers
             </Link>
             <Link href="/payments" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl font-bold text-slate-700">
               <CreditCard size={22} className="text-blue-600" /> Payments
             </Link>
-            <Link href="/clients" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl font-bold text-slate-700">
-              <UserCircle size={22} className="text-blue-600" /> Clients
+            <Link href="/pricing" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl font-bold text-slate-700 hover:bg-slate-100 transition-all">
+              <Gem size={22} className="text-amber-500" /> Subscription
             </Link>
              <Link href="/support" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl font-bold text-slate-700">
               <MessageCircle size={22} className="text-blue-600" /> Support
