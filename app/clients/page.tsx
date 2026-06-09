@@ -49,46 +49,103 @@ export default function Clients() {
     setLoading(false);
   }
 
-  async function handleSave() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!name || !phone || (!projectId && !newProjectName) || !user) {
-      toast.error("Please fill all details");
-      return;
-    }
-    setSaving(true);
-    try {
-      let finalProjectId = projectId;
-      if (isNewProject && newProjectName) {
-        const { data: nProj, error: pErr } = await supabase
+ async function handleSave() {
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!name || !phone || (!projectId && !newProjectName) || !user) {
+    toast.error("Please fill all details");
+    return;
+  }
+
+  setSaving(true);
+
+  try {
+    let finalProjectId = projectId;
+
+    // CREATE NEW PROJECT (if needed)
+    if (isNewProject && newProjectName) {
+      const { data: nProj, error: pErr } = await supabase
+        .from("projects")
+        .insert([
+          {
+            name: newProjectName,
+            status: "active",
+            location: "Not Specified",
+            budget: Number(budget),
+            user_id: user.id,
+          },
+        ])
+        .select()
+        .single();
+
+      if (pErr) throw pErr;
+
+      finalProjectId = nProj.id;
+    } else {
+      if (projectId) {
+        await supabase
           .from("projects")
-          .insert([{ name: newProjectName, status: 'active', location: 'Not Specified', budget: Number(budget), user_id: user.id }])
-          .select()
-          .single();
-        if (pErr) throw pErr;
-        finalProjectId = nProj.id;
-      } else {
-        if (projectId) {
-          await supabase.from("projects").update({ budget: Number(budget) }).eq("id", projectId);
+          .update({ budget: Number(budget) })
+          .eq("id", projectId)
+          .eq("user_id", user.id);
+      }
+    }
+
+    const clientPayload = {
+      name: name.trim(),
+      phone: phone.trim(),
+      project_id: finalProjectId,
+      user_id: user.id,
+    };
+
+    // 🔥 FREE PLAN LIMIT CHECK (ONLY FOR NEW CLIENT)
+    if (!editingId) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("plan")
+        .eq("user_id", user.id)
+        .single();
+
+      if (profile?.plan === "free") {
+        const { count } = await supabase
+          .from("clients")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id);
+
+        if ((count || 0) >= 1) {
+          toast.error("Free plan allows only 1 client. Upgrade required.");
+          setSaving(false);
+          return;
         }
       }
-
-      const clientPayload = { name: name.trim(), phone: phone.trim(), project_id: finalProjectId, user_id: user.id };
-
-      if (editingId) {
-        await supabase.from("clients").update(clientPayload).eq("id", editingId);
-        toast.success("Client Updated");
-      } else {
-        await supabase.from("clients").insert([clientPayload]);
-        toast.success("Client Saved");
-      }
-      resetForm();
-      fetchAll(user.id);
-    } catch (err: any) {
-      toast.error(err.message);
-    } finally {
-      setSaving(false);
     }
+
+    // INSERT / UPDATE
+    if (editingId) {
+      await supabase
+        .from("clients")
+        .update(clientPayload)
+        .eq("id", editingId)
+        .eq("user_id", user.id);
+
+      toast.success("Client Updated");
+    } else {
+      await supabase
+        .from("clients")
+        .insert([clientPayload]);
+
+      toast.success("Client Saved");
+    }
+
+    resetForm();
+    fetchAll(user.id);
+
+  } catch (err: any) {
+    toast.error(err.message);
+  } finally {
+    setSaving(false);
   }
+}
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this client?")) return;

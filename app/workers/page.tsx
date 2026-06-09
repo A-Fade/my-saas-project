@@ -76,6 +76,7 @@ export default function Workers() {
         .from("workers")
         .select("*", { count: "exact", head: true })
         .eq("user_id", user.id);
+        
 
       if ((count || 0) >= 2) {
         toast.error("Free plan allows only 2 workers. Upgrade required.");
