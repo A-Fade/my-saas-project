@@ -98,28 +98,38 @@ export default function Clients() {
       user_id: user.id,
     };
 
-    // 🔥 FREE PLAN LIMIT CHECK (ONLY FOR NEW CLIENT)
-    if (!editingId) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("plan")
-        .eq("user_id", user.id)
-        .single();
+   if (!editingId) {
+  const userId = user.id;
 
-      if (profile?.plan === "free") {
-        const { count } = await supabase
-          .from("clients")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", user.id);
+  const { data: profile, error: pErr } = await supabase
+    .from("profiles")
+    .select("plan")
+    .eq("id", userId)
+    .single();
 
-        if ((count || 0) >= 1) {
-          toast.error("Free plan allows only 1 client. Upgrade required.");
-          setSaving(false);
-          return;
-        }
-      }
-    }
+  if (pErr) {
+    toast.error("Profile fetch failed");
+    setSaving(false);
+    return;
+  }
 
+  const { count, error: cErr } = await supabase
+    .from("clients")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  if (cErr) {
+    toast.error("Count fetch failed");
+    setSaving(false);
+    return;
+  }
+
+  if (profile?.plan === "free" && (count ?? 0) >= 1) {
+    toast.error("Free plan allows only 1 client");
+    setSaving(false);
+    return;
+  }
+}
     // INSERT / UPDATE
     if (editingId) {
       await supabase
