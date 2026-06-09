@@ -51,15 +51,15 @@ export default function Sidebar() {
     },
 
     {
-      name: "Pricing",
-      path: "/pricing",
-      icon: <Gem size={20} />
-    },
-
-    {
       name: "Payments",
       path: "/payments",
       icon: <CreditCard size={20} />,
+    },
+
+    {
+      name: "Subscription",
+      path: "/pricing",
+      icon: <Gem size={20} />
     },
     
     {
