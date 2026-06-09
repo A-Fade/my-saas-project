@@ -51,28 +51,7 @@ export default function PricingPage() {
             >
               PRICING
             </Link>
-
-            <Link
-              href="features"
-              className="text-sm font-bold tracking-[3px] text-slate-500 hover:text-[#0B1533]"
-            >
-              FEATURES
-            </Link>
-
-            <Link
-              href="how-it-works"
-              className="text-sm font-bold tracking-[3px] text-slate-500 hover:text-[#0B1533]"
-            >
-              HOW IT WORKS
-            </Link>
-
-            <Link
-              href="faq"
-              className="text-sm font-bold tracking-[3px] text-slate-500 hover:text-[#0B1533]"
-            >
-              FAQ
-            </Link>
-
+            
           </nav>
 
           {/* CTA */}
