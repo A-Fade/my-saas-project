@@ -57,7 +57,7 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden md:flex items-center gap-8 font-bold text-[11px] uppercase tracking-[0.15em] text-slate-500">
-            <a href="subscription" className="hover:text-slate-900 transition-colors">subscription</a>
+            <a href="Pricing" className="hover:text-slate-900 transition-colors">Pricing</a>
             <a href="#features" className="hover:text-slate-900 transition-colors">Features</a>
             <a href="guides" className="hover:text-slate-900 transition-colors">How it works</a>
             <a href="faq" className="hover:text-slate-900 transition-colors">FAQ</a>
