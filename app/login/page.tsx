@@ -11,25 +11,58 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // 🔄 REDIRECT CHECK FUNCTION
+  async function handleUserRedirect(userId: string) {
+    try {
+      // Supabase se user ka plan_status fetch kar rahe hain
+      const { data: profile, error } = await supabase
+        .from("profiles") // Agar aapki table ka naam 'users' hai to yahan badal dein
+        .select("plan_status")
+        .eq("id", userId)
+        .single();
+
+      if (error) throw error;
+
+      // Plan condition check
+      if (profile?.plan_status === "none" || !profile?.plan_status) {
+        toast.success("Welcome! Please choose a plan.");
+        router.push("/pricing"); // Pricing page par bhejo
+      } else {
+        toast.success("Welcome back!");
+        router.push("/dashboard"); // Dashboard par bhejo
+      }
+    } catch (err) {
+      // Agar profile table mein entry nahi mili to default pricing par bhejo
+      router.push("/pricing");
+    }
+  }
+
   // 📧 EMAIL LOGIN
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Welcome back!");
-      router.push("/dashboard");
+    
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    if (error) {
+      toast.error(error.message);
+      setLoading(false);
+    } else if (data?.user) {
+      // Redirect ka logic chalayen
+      await handleUserRedirect(data.user.id);
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   // 🌐 GOOGLE LOGIN
   async function handleGoogleLogin() {
+    // Note: Google OAuth ke liye direct route handle nahi hota, iska status apko
+    // layout ya global auth listener/middleware mein check karna hoga kyuki ye pure reload karta hai.
+    // Par flow break na ho isliye iska landing URL hum pricing ya dashboard auto-handle ke liye middleware par chhodte hain.
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin + '/dashboard',
+        redirectTo: window.location.origin + '/dashboard', // Middleware isko auto-intercept karke pricing par bhej dega agar plan nahi hoga
       }
     });
     if (error) toast.error(error.message);
