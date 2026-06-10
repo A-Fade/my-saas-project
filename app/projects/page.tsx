@@ -38,7 +38,7 @@ export default function Projects() {
     setLoading(false);
   }
 
-  async function handleSave() {
+    async function handleSave() {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!name || !location || !status || !user) {
@@ -56,34 +56,49 @@ export default function Projects() {
     };
 
     try {
-      // FREE PLAN LIMIT CHECK
+      // 🔥 PLAN LIMIT CHECK (Free & Pro Limits)
       if (!editingId) {
+        // Database se plan_status fetch kar rahe hain
         const { data: profile, error: pErr } = await supabase
           .from("profiles")
-          .select("plan")
+          .select("plan_status") // Updated column name
           .eq("id", user.id)
           .single();
 
         if (pErr) throw new Error("Profile fetch failed");
 
-        if (profile?.plan === "free") {
-          const { count, error: cErr } = await supabase
-            .from("projects")
-            .select("*", { count: "exact", head: true })
-            .eq("user_id", user.id);
+        // User ke total projects ka count check kar rahe hain
+        const { count, error: cErr } = await supabase
+          .from("projects")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id);
 
-          if (cErr) throw new Error("Count fetch failed");
+        if (cErr) throw new Error("Count fetch failed");
 
-          if ((count || 0) >= 1) {
-            toast.error("Free Plan allows only 1 project. Upgrade to Pro.");
-            setSaving(false);
-            return;
-          }
+        const totalProjects = count ?? 0;
+
+        // 1. FREE PLAN LIMIT CHECK
+        if (profile?.plan_status === "free" && totalProjects >= 1) {
+          toast.error("Free Plan allows only 1 project. Please upgrade to Pro.");
+          setSaving(false);
+          router.push("/pricing"); // Redirect to pricing page
+          return;
         }
+
+        // 2. PRO PLAN LIMIT CHECK
+        if (profile?.plan_status === "pro" && totalProjects >= 5) {
+          toast.error("Pro Plan allows only 5 projects. Please upgrade to Business.");
+          setSaving(false);
+          router.push("/pricing"); // Redirect to pricing page
+          return;
+        }
+        
+        // Note: 'business' plan wale automatic bypass ho jayenge (unlimited).
       }
 
+      // 💾 DATABASE INSERT / UPDATE LOGIC
       if (editingId) {
-        // FIXED: Adding scope safety for update query
+        // Project Update karne ke liye
         const { error } = await supabase
           .from("projects")
           .update(payload)
@@ -93,6 +108,7 @@ export default function Projects() {
         if (error) throw error;
         toast.success("Project updated");
       } else {
+        // Naya Project Insert karne ke liye
         const { error } = await supabase
           .from("projects")
           .insert([payload]);
@@ -111,6 +127,7 @@ export default function Projects() {
       setSaving(false);
     }
   }
+
   function handleEdit(p: any) {
     setName(p.name);
     setLocation(p.location);                                                                   
