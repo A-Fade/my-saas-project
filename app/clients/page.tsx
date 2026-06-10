@@ -48,7 +48,6 @@ export default function Clients() {
     setProjects(pData || []);
     setLoading(false);
   }
-
 async function handleSave() {
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -60,16 +59,18 @@ async function handleSave() {
   setSaving(true);
 
   try {
-    // 🔥 STEP 1: FREE PLAN LIMIT CHECK (Sabse Pehle Check Hoga Taaki Faltu Projects Create Na Hon)
+    // 🔥 STEP 1: PLAN LIMIT CHECK (Free & Pro Limits)
     if (!editingId) {
+      // Supabase se user ka 'plan_status' fetch kar rahe hain
       const { data: profile, error: pErr } = await supabase
         .from("profiles")
-        .select("plan")
+        .select("plan_status") // Database column name updated
         .eq("id", user.id)
         .single();
 
       if (pErr) throw new Error("Profile fetch failed");
 
+      // Total clients ka count nikal rahe hain jo is user ne banaye hain
       const { count, error: cErr } = await supabase
         .from("clients")
         .select("*", { count: "exact", head: true })
@@ -77,11 +78,25 @@ async function handleSave() {
 
       if (cErr) throw new Error("Count fetch failed");
 
-      if (profile?.plan === "free" && (count ?? 0) >= 1) {
-        toast.error("Free plan allows only 1 client. Upgrade to Pro.");
+      const totalClients = count ?? 0;
+
+      // 1. FREE PLAN LIMIT CHECK
+      if (profile?.plan_status === "free" && totalClients >= 1) {
+        toast.error("Free plan allows only 1 client. Please upgrade to Pro.");
         setSaving(false);
-        return; // Yahin se code ruk jayega
+        router.push("/pricing"); // User ko direct pricing page bhejo upgrade ke liye
+        return; 
       }
+
+      // 2. PRO PLAN LIMIT CHECK
+      if (profile?.plan_status === "pro" && totalClients >= 5) {
+        toast.error("Pro plan allows only 5 clients. Please upgrade to Business.");
+        setSaving(false);
+        router.push("/pricing"); // User ko direct pricing page bhejo upgrade ke liye
+        return; 
+      }
+      
+      // Note: Agar profile?.plan_status === 'business' hoga to wo automatically unlimited bypass ho jayega.
     }
 
     let finalProjectId = projectId;
