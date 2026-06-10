@@ -50,7 +50,7 @@ export default function Workers() {
     }
   }
 
-  async function handleSave() {
+    async function handleSave() {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!name || !phone || !salary || !projectId || !user) {
@@ -69,31 +69,46 @@ export default function Workers() {
     };
 
     try {
-      // ✅ FREE PLAN LIMIT CHECK
+      // 🔥 PLAN LIMIT CHECK (Free & Pro Limits)
       if (!editingId) {
+        // Database se plan_status fetch kar rahe hain
         const { data: profile, error: pErr } = await supabase
           .from("profiles")
-          .select("plan")
+          .select("plan_status") // Column name updated
           .eq("id", user.id)
           .single();
 
         if (pErr) throw new Error("Profile fetch failed");
 
-        if (profile?.plan === "free") {
-          const { count, error: cErr } = await supabase
-            .from("workers")
-            .select("*", { count: "exact", head: true })
-            .eq("user_id", user.id);
+        // User ke total workers ka count check kar rahe hain
+        const { count, error: cErr } = await supabase
+          .from("workers")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id);
 
-          if (cErr) throw new Error("Count fetch failed");
+        if (cErr) throw new Error("Count fetch failed");
 
-          if ((count || 0) >= 2) {
-            toast.error("Free plan allows only 2 workers. Upgrade required.");
-            setSaving(false);
-            return;
-          }
+        const totalWorkers = count ?? 0;
+
+        // 1. FREE PLAN LIMIT CHECK
+        if (profile?.plan_status === "free" && totalWorkers >= 2) {
+          toast.error("Free plan allows only 2 workers. Please upgrade to Pro.");
+          setSaving(false);
+          router.push("/pricing"); // Redirect to pricing page
+          return;
         }
+
+        // 2. PRO PLAN LIMIT CHECK
+        if (profile?.plan_status === "pro" && totalWorkers >= 25) {
+          toast.error("Pro plan allows only 25 workers. Please upgrade to Business.");
+          setSaving(false);
+          router.push("/pricing"); // Redirect to pricing page
+          return;
+        }
+
+        // Note: 'business' plan wale automatic bypass ho jayenge (unlimited).
       }
+
 
       if (editingId) {
         // FIXED: Added security layer .eq("user_id", user.id)
