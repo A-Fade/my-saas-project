@@ -81,7 +81,7 @@ export default function PricingPage() {
               Login
             </Link>
             <Link
-              href="/register"
+              href="/signup"
               className="bg-[#0B1533] text-white px-5 py-3 rounded-xl font-semibold"
             >
               Get Started

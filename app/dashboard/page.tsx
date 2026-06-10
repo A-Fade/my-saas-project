@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Topbar from "@/app/components/Topbar";
 import { Folder, Users, Banknote, Clock, History, CheckCircle, ChevronRight, X, Package, Phone, Building2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function Dashboard() {
   const [data, setData] = useState({
@@ -30,6 +31,20 @@ export default function Dashboard() {
       if (!user) { router.push("/login"); return; }
       const userId = user.id;
 
+      // 🛡️ SUBSCRIPTION SECURITY CHECK
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles") // Agar aapki table ka naam 'users' hai to yahan badal sakte hain
+        .select("plan_status")
+        .eq("id", userId)
+        .single();
+
+      if (profileError || !profile || profile.plan_status === "none" || !profile.plan_status) {
+        toast.error("Please choose a plan to access the dashboard.");
+        router.push("/pricing"); // Pricing page par redirect karein
+        return;
+      }
+
+      // Agar plan active hai tabhi baki ka data fetch hoga
       const now = new Date();
       const startOfDay = new Date(now.setHours(0,0,0,0)).toISOString();
       const endOfDay = new Date(now.setHours(23,59,59,999)).toISOString();
@@ -87,7 +102,6 @@ export default function Dashboard() {
           <StatCard title="Today Spend" value={`₹${totalTodaySpend}`} icon={<Package size={18}/>} />
           <StatCard onClick={() => setView('history')} title="History" value="View" icon={<History size={18}/>} />
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           {/* Project List */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
