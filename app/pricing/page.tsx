@@ -50,7 +50,7 @@ export default function PricingPage() {
       const amountInPaise = planName === "pro" ? 49900 : 99900;
 
       const options = {
-        key: "rzp_test_YOUR_KEY_HERE", // ⚠️ Razorpay Dashboard ki Test ID yahan lagayein
+        key: "rzp_live_T0jkPpCQ9VYDVS", // ⚠️ Razorpay Dashboard ki Test ID yahan lagayein
         amount: amountInPaise,
         currency: "INR",
         name: "BuilderPro SaaS",
