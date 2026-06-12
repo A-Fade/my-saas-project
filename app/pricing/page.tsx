@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Check } from "lucide-react";
-import { useState, useEffect } from "react"; // useEffect added
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -11,40 +11,53 @@ export default function PricingPage() {
   const router = useRouter();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
-  // 🚀 BACKGROUND SCRIPT INJECTOR (Page load hote hi load kar dega automatically)
+  // 🚀 FORCED DOM SCRIPT INJECTOR (Safest method for Next.js App Router)
   useEffect(() => {
     if (typeof window !== "undefined" && !(window as any).Razorpay) {
       const script = document.createElement("script");
       script.src = "https://razorpay.com";
       script.async = true;
-      script.id = "razorpay-client-script";
-      document.body.appendChild(script);
+      script.defer = true;
+      script.id = "razorpay-core-script";
+      document.head.appendChild(script); // Appending to Head for faster processing
     }
   }, []);
 
-  // 🔄 BACKUP RUNTIME CHECK (Agar user turant aakar click karde bina load huye)
-  const ensureRazorpayScript = () => {
+  // 🔄 FULLY AUTOMATED RUNTIME EXTENSION BYPASS
+  const forceLoadRazorpay = () => {
     return new Promise((resolve) => {
       if ((window as any).Razorpay) {
         resolve(true);
         return;
       }
-      
-      // Agar background tag nahi bana to naya banao
-      let script = document.getElementById("razorpay-client-script") as HTMLScriptElement;
-      if (!script) {
-        script = document.createElement("script");
+
+      const existingScript = document.getElementById("razorpay-core-script") as HTMLScriptElement;
+      if (existingScript) {
+        existingScript.onload = () => resolve(true);
+        existingScript.onerror = () => resolve(false);
+      } else {
+        const script = document.createElement("script");
         script.src = "https://razorpay.com";
         script.async = true;
-        script.id = "razorpay-client-script";
-        document.body.appendChild(script);
+        script.id = "razorpay-core-script";
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.head.appendChild(script);
       }
 
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-
-      // Timeout barrier block protection (Agar load hone mein zyada time lage)
-      setTimeout(() => resolve(!!(window as any).Razorpay), 2500);
+      // Safety check loop for tracking instantiation
+      let checks = 0;
+      const interval = setInterval(() => {
+        checks++;
+        if ((window as any).Razorpay) {
+          clearInterval(interval);
+          resolve(true);
+        }
+        if (checks > 15) { // Stop after 3 seconds max
+          clearInterval(interval);
+          resolve(!!(window as any).Razorpay);
+        }
+      }, 200);
     });
   };
 
@@ -78,15 +91,14 @@ export default function PricingPage() {
         if (updateError) throw updateError;
 
         toast.success(`Starter Plan activated successfully!`);
-        router.push("/dashboard"); // Direct dashboard par bhejo
+        router.push("/dashboard"); 
         return;
       }
 
-      // 2️⃣ AGAR PAID PLAN (PRO / BUSINESS) HAI -> Open Razorpay Window
-      // Pehle script availability freeze verify karein
-      const isScriptReady = await ensureRazorpayScript();
-      if (!isScriptReady) {
-        toast.error("Razorpay is initializing. Please click again in 2 seconds.");
+      // 2️⃣ AGAR PAID PLAN (PRO / BUSINESS) HAI -> Forced Initialization
+      const isReady = await forceLoadRazorpay();
+      if (!isReady) {
+        toast.error("Ad-Blocker detected! Please disable your ad-blocker or check your internet to complete payment.");
         setLoadingPlan(null);
         return;
       }
@@ -124,11 +136,10 @@ export default function PricingPage() {
           email: user.email,
         },
         theme: {
-          color: "#0B1533", // BuilderPro matching brand layout color
+          color: "#0B1533",
         },
       };
 
-      // Ab window object par Razorpay securely initialize ho jayenge
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
 
@@ -138,6 +149,7 @@ export default function PricingPage() {
       setLoadingPlan(null);
     }
   }
+
 
 
   return (
