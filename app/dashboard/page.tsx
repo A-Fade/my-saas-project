@@ -31,20 +31,28 @@ export default function Dashboard() {
       if (!user) { router.push("/login"); return; }
       const userId = user.id;
 
-      // 🛡️ SUBSCRIPTION SECURITY CHECK
+      // 🛡️ SUBSCRIPTION SECURITY & 30-DAY AUTO LOCK CHECK
       const { data: profile, error: profileError } = await supabase
-        .from("profiles") // Agar aapki table ka naam 'users' hai to yahan badal sakte hain
-        .select("plan_status")
+        .from("profiles") // Database table target check
+        .select("plan_status, plan_expiry")
         .eq("id", userId)
         .single();
 
-      if (profileError || !profile || profile.plan_status === "none" || !profile.plan_status) {
-        toast.error("Please choose a plan to access the dashboard.");
-        router.push("/pricing"); // Pricing page par redirect karein
+      // Current timestamp versus plan expiry target parsing
+      const isExpired = profile?.plan_expiry ? new Date(profile.plan_expiry) < new Date() : true;
+
+      // Agar koi plan hi nahi hai, ya status galat hai, ya plan expired ho chuka hai
+      if (profileError || !profile || profile.plan_status === "none" || !profile.plan_status || isExpired) {
+        if (isExpired && profile?.plan_status && profile.plan_status !== "none") {
+          toast.error("Your 30-day plan has expired! Please renew your subscription.");
+        } else {
+          toast.error("Please choose a plan to access the dashboard.");
+        }
+        router.push("/pricing"); // Core Redirect parameter
         return;
       }
 
-      // Agar plan active hai tabhi baki ka data fetch hoga
+      // Agar subscription token check true hai tabhi baki ka data call chalega
       const now = new Date();
       const startOfDay = new Date(now.setHours(0,0,0,0)).toISOString();
       const endOfDay = new Date(now.setHours(23,59,59,999)).toISOString();
@@ -117,7 +125,6 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
-
           {/* Material Expenses */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
