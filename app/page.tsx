@@ -50,9 +50,14 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           {/* Dashboard Style Logo */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white shadow-lg shadow-slate-200">
-              <LayoutGrid size={22} />
-            </div>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
+  <img 
+    src="/icon.png" 
+    alt="BuilderPro Logo" 
+    className="w-full h-full object-contain"
+  />
+</div>
+
             <span className="text-xl font-bold tracking-tight text-slate-900">Builder Pro</span>
           </div>
 
