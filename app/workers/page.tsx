@@ -50,7 +50,7 @@ export default function Workers() {
     }
   }
 
-    async function handleSave() {
+   async function handleSave() {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!name || !phone || !salary || !projectId || !user) {
@@ -69,16 +69,27 @@ export default function Workers() {
     };
 
     try {
-      // 🔥 PLAN LIMIT CHECK (Free & Pro Limits)
+      // 🔥 PLAN LIMIT & 30-DAY EXPIRY CHECK
       if (!editingId) {
-        // Database se plan_status fetch kar rahe hain
+        // Database se plan_status aur plan_expiry dono fetch kar rahe hain
         const { data: profile, error: pErr } = await supabase
           .from("profiles")
-          .select("plan_status") // Column name updated
+          .select("plan_status, plan_expiry") // plan_expiry added
           .eq("id", user.id)
           .single();
 
         if (pErr) throw new Error("Profile fetch failed");
+
+        // Expiry check logic
+        const isExpired = profile?.plan_expiry ? new Date(profile.plan_expiry) < new Date() : true;
+
+        // Agar plan free nahi hai aur expire ho chuka hai, to direct block karein
+        if (profile?.plan_status !== "free" && isExpired) {
+          toast.error("Your plan has expired! Please renew to add more workers.");
+          setSaving(false);
+          router.push("/pricing");
+          return;
+        }
 
         // User ke total workers ka count check kar rahe hain
         const { count, error: cErr } = await supabase
@@ -94,7 +105,7 @@ export default function Workers() {
         if (profile?.plan_status === "free" && totalWorkers >= 2) {
           toast.error("Free plan allows only 2 workers. Please upgrade to Pro.");
           setSaving(false);
-          router.push("/pricing"); // Redirect to pricing page
+          router.push("/pricing"); 
           return;
         }
 
@@ -102,12 +113,13 @@ export default function Workers() {
         if (profile?.plan_status === "pro" && totalWorkers >= 25) {
           toast.error("Pro plan allows only 25 workers. Please upgrade to Business.");
           setSaving(false);
-          router.push("/pricing"); // Redirect to pricing page
+          router.push("/pricing"); 
           return;
         }
 
         // Note: 'business' plan wale automatic bypass ho jayenge (unlimited).
       }
+
 
 
       if (editingId) {
