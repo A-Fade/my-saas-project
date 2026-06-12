@@ -11,57 +11,18 @@ export default function PricingPage() {
   const router = useRouter();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
-  // 🚀 FORCED DOM SCRIPT INJECTOR (Safest method for Next.js App Router)
+  // 🚀 BACKGROUND SCRIPT PRELOADER
   useEffect(() => {
-    if (typeof window !== "undefined" && !(window as any).Razorpay) {
+    if (typeof window !== "undefined" && !((window as any).Razorpay)) {
       const script = document.createElement("script");
       script.src = "https://razorpay.com";
       script.async = true;
-      script.defer = true;
       script.id = "razorpay-core-script";
-      document.head.appendChild(script); // Appending to Head for faster processing
+      document.head.appendChild(script);
     }
   }, []);
 
-  // 🔄 FULLY AUTOMATED RUNTIME EXTENSION BYPASS
-  const forceLoadRazorpay = () => {
-    return new Promise((resolve) => {
-      if ((window as any).Razorpay) {
-        resolve(true);
-        return;
-      }
-
-      const existingScript = document.getElementById("razorpay-core-script") as HTMLScriptElement;
-      if (existingScript) {
-        existingScript.onload = () => resolve(true);
-        existingScript.onerror = () => resolve(false);
-      } else {
-        const script = document.createElement("script");
-        script.src = "https://razorpay.com";
-        script.async = true;
-        script.id = "razorpay-core-script";
-        script.onload = () => resolve(true);
-        script.onerror = () => resolve(false);
-        document.head.appendChild(script);
-      }
-
-      // Safety check loop for tracking instantiation
-      let checks = 0;
-      const interval = setInterval(() => {
-        checks++;
-        if ((window as any).Razorpay) {
-          clearInterval(interval);
-          resolve(true);
-        }
-        if (checks > 15) { // Stop after 3 seconds max
-          clearInterval(interval);
-          resolve(!!(window as any).Razorpay);
-        }
-      }, 200);
-    });
-  };
-
-  // 🔄 DATABASE UPDATE, PAYMENT GATEWAY & REDIRECT LOGIC
+  // 🔄 DATABASE UPDATE & BULLETPROOF REDIRECT GATEWAY LOGIC
   async function handleSelectPlan(planName: "free" | "pro" | "business") {
     setLoadingPlan(planName);
     try {
@@ -95,53 +56,15 @@ export default function PricingPage() {
         return;
       }
 
-      // 2️⃣ AGAR PAID PLAN (PRO / BUSINESS) HAI -> Forced Initialization
-      const isReady = await forceLoadRazorpay();
-      if (!isReady) {
-        toast.error("Ad-Blocker detected! Please disable your ad-blocker or check your internet to complete payment.");
-        setLoadingPlan(null);
-        return;
-      }
-
-      // Razorpay amount paise format mein leta hai (₹499 = 49900 paise, ₹999 = 99900 paise)
+      // 2️⃣ AGAR PAID PLAN (PRO / BUSINESS) HAI -> Automatic Ad-Blocker Bypass Redirection
       const amountInPaise = planName === "pro" ? 49900 : 99900;
+      
+      // Humara success page jo payment ke baad open hoke database entry karega
+      const successRedirectUrl = `${window.location.origin}/payment-success?plan=${planName}&user_id=${user.id}`;
 
-      const options = {
-        key: "rzp_live_T0jkPpCQ9VYDVS", // Aapki live api key
-        amount: amountInPaise,
-        currency: "INR",
-        name: "BuilderPro SaaS",
-        description: `Purchase ${planName} Monthly Subscription`,
-        handler: async function (response: any) {
-          if (response.razorpay_payment_id) {
-            
-            const { error: updateError } = await supabase
-              .from("profiles")
-              .update({ 
-                plan_status: planName,
-                plan_expiry: expiryDate.toISOString() // Subscription expiry date set
-              })
-              .eq("id", user.id);
-
-            if (updateError) {
-              toast.error("Payment successful but database update failed. Contact support.");
-              return;
-            }
-
-            toast.success(`Payment Successful! ${planName} plan activated.`);
-            router.push("/dashboard");
-          }
-        },
-        prefill: {
-          email: user.email,
-        },
-        theme: {
-          color: "#0B1533",
-        },
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.open();
+      // 🔥 100% BYPASS ROUTE: Seedha standard Razorpay page par redirect karo bina popup block kiye
+      window.location.href = `https://razorpay.com{amountInPaise}&currency=INR&name=BuilderPro%20SaaS&description=Purchase%20${planName}%20Monthly%20Subscription&prefill[email]=${encodeURIComponent(user.email || "")}&callback_url=${encodeURIComponent(successRedirectUrl)}`;
+      return;
 
     } catch (error: any) {
       toast.error(error.message || "Something went wrong.");
