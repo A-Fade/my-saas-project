@@ -11,7 +11,7 @@ export default function PricingPage() {
   const router = useRouter();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
-  // 🔄 DATABASE UPDATE AUR REDIRECT LOGIC
+  // 🔄 DATABASE UPDATE, PAYMENT GATEWAY & REDIRECT LOGIC
   async function handleSelectPlan(planName: "free" | "pro" | "business") {
     setLoadingPlan(planName);
     try {
@@ -24,16 +24,69 @@ export default function PricingPage() {
         return;
       }
 
-      // Supabase profiles table mein plan_status update karein
-      const { error: updateError } = await supabase
-        .from("profiles") // Agar aapki table ka naam 'users' hai to yahan badal sakte hain
-        .update({ plan_status: planName })
-        .eq("id", user.id);
+      // 📅 Thik 30 din baad ki expiry date calculate ho rahi hai
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 30);
 
-      if (updateError) throw updateError;
+      // 1️⃣ AGAR FREE (STARTER) PLAN HAI -> No Payment, Direct Activation
+      if (planName === "free") {
+        const { error: updateError } = await supabase
+          .from("profiles") // Agar aapki table ka naam 'users' hai to yahan badal sakte hain
+          .update({ 
+            plan_status: planName,
+            plan_expiry: expiryDate.toISOString() // 30-Day expiry save
+          })
+          .eq("id", user.id);
 
-      toast.success(`Plan activated successfully!`);
-      router.push("/dashboard"); // Direct dashboard par bhejo
+        if (updateError) throw updateError;
+
+        toast.success(`Starter Plan activated successfully!`);
+        router.push("/dashboard"); // Direct dashboard par bhejo
+        return;
+      }
+
+      // 2️⃣ AGAR PAID PLAN (PRO / BUSINESS) HAI -> Open Razorpay Window
+      // Razorpay amount paise format mein leta hai (₹499 = 49900 paise, ₹999 = 99900 paise)
+      const amountInPaise = planName === "pro" ? 49900 : 99900;
+
+      const options = {
+        key: "rzp_test_YOUR_KEY_HERE", // ⚠️ Razorpay Dashboard ki Test ID yahan lagayein
+        amount: amountInPaise,
+        currency: "INR",
+        name: "BuilderPro SaaS",
+        description: `Purchase ${planName} Monthly Subscription`,
+        handler: async function (response: any) {
+          // Yeh tab chalega jab test checkout par user 'SUCCESS' button press karega
+          if (response.razorpay_payment_id) {
+            
+            const { error: updateError } = await supabase
+              .from("profiles")
+              .update({ 
+                plan_status: planName,
+                plan_expiry: expiryDate.toISOString() // Subscription expiry date set
+              })
+              .eq("id", user.id);
+
+            if (updateError) {
+              toast.error("Payment successful but database update failed. Contact support.");
+              return;
+            }
+
+            toast.success(`Payment Successful! ${planName} plan activated.`);
+            router.push("/dashboard");
+          }
+        },
+        prefill: {
+          email: user.email,
+        },
+        theme: {
+          color: "#0B1533", // BuilderPro matching brand layout color
+        },
+      };
+
+      // Popup initialization
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
 
     } catch (error: any) {
       toast.error(error.message || "Something went wrong.");
@@ -160,13 +213,12 @@ export default function PricingPage() {
               <span className="text-5xl font-black">₹499</span>
               <span className="text-slate-500">/month</span>
             </div>
-
             <button
               onClick={() => handleSelectPlan("pro")}
               disabled={loadingPlan !== null}
               className="w-full text-center mt-8 bg-[#0B1533] text-white py-3 rounded-xl font-semibold hover:bg-[#15234d] transition-colors disabled:opacity-50"
             >
-              {loadingPlan === "pro" ? "Activating..." : "Start Pro Trial"}
+              {loadingPlan === "pro" ? "Opening Gateway..." : "Start Pro Trial"}
             </button>
 
             <div className="space-y-4 mt-8">
@@ -178,6 +230,7 @@ export default function PricingPage() {
               <Feature text="Priority Support" />
             </div>
           </div>
+
           {/* Business Plan */}
           <div className="border rounded-3xl p-8">
             <h3 className="text-3xl font-bold text-[#0B1533]">
@@ -196,7 +249,7 @@ export default function PricingPage() {
               disabled={loadingPlan !== null}
               className="w-full text-center mt-8 border-2 border-[#0B1533] py-3 rounded-xl font-semibold hover:bg-slate-50 transition-colors disabled:opacity-50"
             >
-              {loadingPlan === "business" ? "Activating..." : "Get Started"}
+              {loadingPlan === "business" ? "Opening Gateway..." : "Get Started"}
             </button>
 
             <div className="space-y-4 mt-8">
