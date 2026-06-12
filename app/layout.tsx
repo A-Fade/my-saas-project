@@ -17,7 +17,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Builder SaaS",
   description: "Manage projects, workers & payments",
+  // 🔥 Google Search index crawler parsing support
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png", sizes: "96x96" } // Sahi dimensions
+    ],
+    shortcut: "/favicon.ico",
+  },
 };
+
 
 export default function RootLayout({
   children,
