@@ -89,8 +89,8 @@ async function handleSave() {
       }
 
       // 2. PRO PLAN LIMIT CHECK
-      if (profile?.plan_status === "pro" && totalClients >= 5) {
-        toast.error("Pro plan allows only 5 clients. Please upgrade to Business.");
+      if (profile?.plan_status === "pro" && totalClients >= 10) {
+        toast.error("Pro plan allows only 10 clients. Please upgrade to Business.");
         setSaving(false);
         router.push("/pricing"); // User ko direct pricing page bhejo upgrade ke liye
         return; 

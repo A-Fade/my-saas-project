@@ -110,8 +110,8 @@ export default function Workers() {
         }
 
         // 2. PRO PLAN LIMIT CHECK
-        if (profile?.plan_status === "pro" && totalWorkers >= 25) {
-          toast.error("Pro plan allows only 25 workers. Please upgrade to Business.");
+        if (profile?.plan_status === "pro" && totalWorkers >= 120) {
+          toast.error("Pro plan allows only 120 workers. Please upgrade to Business.");
           setSaving(false);
           router.push("/pricing"); 
           return;

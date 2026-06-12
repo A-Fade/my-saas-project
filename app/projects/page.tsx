@@ -97,8 +97,8 @@ export default function Projects() {
         }
 
         // 2. PRO PLAN LIMIT CHECK
-        if (profile?.plan_status === "pro" && totalProjects >= 5) {
-          toast.error("Pro Plan allows only 5 projects. Please upgrade to Business.");
+        if (profile?.plan_status === "pro" && totalProjects >= 10) {
+          toast.error("Pro Plan allows only 10 projects. Please upgrade to Business.");
           setSaving(false);
           router.push("/pricing");
           return;
