@@ -223,11 +223,11 @@ export default function PricingPage() {
             </button>
 
             <div className="space-y-4 mt-8">
-              <Feature text="Unlimited Projects" />
-              <Feature text="Unlimited Workers" />
-              <Feature text="Unlimited Clients" />
+              <Feature text="5 Projects" />
+              <Feature text="25 Workers" />
+              <Feature text="5 Clients" />
               <Feature text="Payment Tracking" />
-              <Feature text="Reports" />
+              <Feature text="Advanced Dashboard" />
               <Feature text="Priority Support" />
             </div>
           </div>
@@ -254,11 +254,12 @@ export default function PricingPage() {
             </button>
 
             <div className="space-y-4 mt-8">
-              <Feature text="Everything in Pro" />
-              <Feature text="Multi Company Support" />
-              <Feature text="Team Permissions" />
-              <Feature text="Advanced Analytics" />
+              <Feature text="Unlimited Projects" />
+              <Feature text="Unlimited Workers" />
+              <Feature text="Unlimited Clients" />
+              <Feature text="Advanced Payment Tracking" />
               <Feature text="Pro Dashboard" />
+              <Feature text="24/7" />
             </div>
           </div>
 
