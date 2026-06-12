@@ -11,6 +11,21 @@ export default function PricingPage() {
   const router = useRouter();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
+  // 🔄 RAZORPAY SCRIPT LOADER (Isse constructor error permanently fix ho jayega)
+  const initializeRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if ((window as any).Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://razorpay.com";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   // 🔄 DATABASE UPDATE, PAYMENT GATEWAY & REDIRECT LOGIC
   async function handleSelectPlan(planName: "free" | "pro" | "business") {
     setLoadingPlan(planName);
@@ -31,7 +46,7 @@ export default function PricingPage() {
       // 1️⃣ AGAR FREE (STARTER) PLAN HAI -> No Payment, Direct Activation
       if (planName === "free") {
         const { error: updateError } = await supabase
-          .from("profiles") // Agar aapki table ka naam 'users' hai to yahan badal sakte hain
+          .from("profiles")
           .update({ 
             plan_status: planName,
             plan_expiry: expiryDate.toISOString() // 30-Day expiry save
@@ -46,17 +61,23 @@ export default function PricingPage() {
       }
 
       // 2️⃣ AGAR PAID PLAN (PRO / BUSINESS) HAI -> Open Razorpay Window
+      // Pehle confirm karein ki script fully load ho chuki hai
+      const isScriptReady = await initializeRazorpayScript();
+      if (!isScriptReady) {
+        toast.error("Razorpay payment gateway failed to load. Please check your internet.");
+        return;
+      }
+
       // Razorpay amount paise format mein leta hai (₹499 = 49900 paise, ₹999 = 99900 paise)
       const amountInPaise = planName === "pro" ? 49900 : 99900;
 
       const options = {
-        key: "rzp_live_T0jkPpCQ9VYDVS", // ⚠️ Razorpay Dashboard ki Test ID yahan lagayein
+        key: "rzp_live_T0jkPpCQ9VYDVS", // Aapki live api key
         amount: amountInPaise,
         currency: "INR",
         name: "BuilderPro SaaS",
         description: `Purchase ${planName} Monthly Subscription`,
         handler: async function (response: any) {
-          // Yeh tab chalega jab test checkout par user 'SUCCESS' button press karega
           if (response.razorpay_payment_id) {
             
             const { error: updateError } = await supabase
@@ -84,7 +105,7 @@ export default function PricingPage() {
         },
       };
 
-      // Popup initialization
+      // Ab window object par Razorpay securely initialize ho jayenge
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
 
@@ -94,6 +115,7 @@ export default function PricingPage() {
       setLoadingPlan(null);
     }
   }
+
 
   return (
     <div className="min-h-screen bg-white">
