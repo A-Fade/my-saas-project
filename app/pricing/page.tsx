@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Check } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react"; // useEffect added
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -11,18 +11,40 @@ export default function PricingPage() {
   const router = useRouter();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
-  // 🔄 RAZORPAY SCRIPT LOADER (Isse constructor error permanently fix ho jayega)
-  const initializeRazorpayScript = () => {
+  // 🚀 BACKGROUND SCRIPT INJECTOR (Page load hote hi load kar dega automatically)
+  useEffect(() => {
+    if (typeof window !== "undefined" && !(window as any).Razorpay) {
+      const script = document.createElement("script");
+      script.src = "https://razorpay.com";
+      script.async = true;
+      script.id = "razorpay-client-script";
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  // 🔄 BACKUP RUNTIME CHECK (Agar user turant aakar click karde bina load huye)
+  const ensureRazorpayScript = () => {
     return new Promise((resolve) => {
       if ((window as any).Razorpay) {
         resolve(true);
         return;
       }
-      const script = document.createElement("script");
-      script.src = "https://razorpay.com";
+      
+      // Agar background tag nahi bana to naya banao
+      let script = document.getElementById("razorpay-client-script") as HTMLScriptElement;
+      if (!script) {
+        script = document.createElement("script");
+        script.src = "https://razorpay.com";
+        script.async = true;
+        script.id = "razorpay-client-script";
+        document.body.appendChild(script);
+      }
+
       script.onload = () => resolve(true);
       script.onerror = () => resolve(false);
-      document.body.appendChild(script);
+
+      // Timeout barrier block protection (Agar load hone mein zyada time lage)
+      setTimeout(() => resolve(!!(window as any).Razorpay), 2500);
     });
   };
 
@@ -61,10 +83,11 @@ export default function PricingPage() {
       }
 
       // 2️⃣ AGAR PAID PLAN (PRO / BUSINESS) HAI -> Open Razorpay Window
-      // Pehle confirm karein ki script fully load ho chuki hai
-      const isScriptReady = await initializeRazorpayScript();
+      // Pehle script availability freeze verify karein
+      const isScriptReady = await ensureRazorpayScript();
       if (!isScriptReady) {
-        toast.error("Razorpay payment gateway failed to load. Please check your internet.");
+        toast.error("Razorpay is initializing. Please click again in 2 seconds.");
+        setLoadingPlan(null);
         return;
       }
 
