@@ -223,9 +223,9 @@ export default function PricingPage() {
             </button>
 
             <div className="space-y-4 mt-8">
-              <Feature text="5 Projects" />
-              <Feature text="25 Workers" />
-              <Feature text="5 Clients" />
+              <Feature text="10 Projects" />
+              <Feature text="120 Workers" />
+              <Feature text="10 Clients" />
               <Feature text="Payment Tracking" />
               <Feature text="Advanced Dashboard" />
               <Feature text="Priority Support" />
