@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import Script from "next/script"; // 🔥 Next.js Standard Optimizer imported
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,6 +27,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="antialiased bg-slate-100">
+        
+        {/* 🔥 Global Razorpay Script injection layout configuration */}
+        <Script 
+          src="https://razorpay.com" 
+          strategy="beforeInteractive" 
+        />
+
         {children}
         
         {/* Premium Professional Toaster Center Setting */}
