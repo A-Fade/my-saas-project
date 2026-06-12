@@ -15,16 +15,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Builder SaaS",
+  title: "BuilderPro SaaS",
   description: "Manage projects, workers & payments",
-  // 🔥 Google Search index crawler parsing support
+  // 🔥 Explicit icon injection setup
   icons: {
-    icon: [
-      { url: "/icon.png", type: "image/png", sizes: "96x96" } // Sahi dimensions
-    ],
-    shortcut: "/favicon.ico",
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
   },
 };
+
 
 
 export default function RootLayout({
