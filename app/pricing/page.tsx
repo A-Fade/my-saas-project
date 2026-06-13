@@ -339,7 +339,7 @@ export default function PricingPage() {
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
             <Link
-              href="/register"
+              href="/login"
               className="bg-white text-[#0B1533] px-8 py-4 rounded-xl font-bold"
             >
               Start Free
