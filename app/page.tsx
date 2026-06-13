@@ -156,10 +156,15 @@ export default function LandingPage() {
       <footer className="py-20">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-10">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white">
-              <LayoutGrid size={16} />
-            </div>
-            <span className="text-lg font-bold tracking-tight text-slate-900">Builder Pro</span>
+           <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden">
+  <img 
+    src="/icon.png" 
+    alt="BuilderPro Logo" 
+    className="w-full h-full object-contain"
+  />
+</div>
+<span className="text-lg font-bold tracking-tight text-slate-900">Builder Pro</span>
+
           </div>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">© 2024 Builder Pro. Made for Contractors.</p>
           <div className="flex gap-8 text-[11px] font-bold uppercase tracking-widest text-slate-500">
