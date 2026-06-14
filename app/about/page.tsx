@@ -96,7 +96,7 @@ export default function AboutPage() {
           </p>
 
           <a
-            href="/signup"
+            href="/login"
             className="inline-flex items-center justify-center px-10 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all"
           >
             Get Started
