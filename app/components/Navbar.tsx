@@ -12,7 +12,7 @@ export default function Navbar() {
             BuilderPro
           </Link>
 
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="flex md:flex items-center gap-8">
             <Link href="/" className="font-semibold text-slate-600 hover:text-slate-900">
               Home
             </Link>
