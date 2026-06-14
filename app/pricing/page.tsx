@@ -100,38 +100,40 @@ const [isMenuOpen, setIsMenuOpen] = useState(false);
     <div className="min-h-screen bg-white">
 
    {/* Navbar */}
-<header className="sticky top-0 z-50 bg-white border-b border-slate-200">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+<header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
+  <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
 
+    {/* Logo */}
     <Link href="/" className="flex items-center gap-3">
-      <div className="w-10 h-10 bg-[#0B1533] rounded-xl flex items-center justify-center text-white font-bold">
-        B
+      <div className="w-10 h-10 rounded-xl overflow-hidden">
+        <img src="/icon.png" alt="BuilderPro Logo" className="w-full h-full object-contain" />
       </div>
-      <span className="text-2xl md:text-3xl font-bold text-[#0B1533]">
+
+      <span className="text-xl font-bold tracking-tight text-slate-900">
         BuilderPro
       </span>
     </Link>
 
     {/* Desktop Menu */}
-    <nav className="hidden md:flex items-center gap-8">
-      <Link href="/" className="font-semibold text-slate-600 hover:text-[#0B1533]">Home</Link>
-      <Link href="/pricing" className="font-semibold text-[#0B1533]">Pricing</Link>
-      <Link href="/guides" className="font-semibold text-[#0B1533]">Guides</Link>
-      <Link href="/faq" className="font-semibold text-[#0B1533]">FAQ</Link>
-      <Link href="/about" className="font-semibold text-[#0B1533]">About</Link>
+    <nav className="hidden md:flex items-center gap-8 font-bold text-[11px] uppercase tracking-[0.15em] text-slate-500">
+      <Link href="/" className="hover:text-slate-900 transition-colors">Home</Link>
+      <Link href="/pricing" className="hover:text-slate-900 transition-colors">Pricing</Link>
+      <Link href="/guides" className="hover:text-slate-900 transition-colors">Guides</Link>
+      <Link href="/faq" className="hover:text-slate-900 transition-colors">FAQ</Link>
+      <Link href="/about" className="hover:text-slate-900 transition-colors">About</Link>
     </nav>
 
-    {/* Right buttons (Desktop) */}
-    <div className="hidden md:flex items-center gap-3">
-      <Link href="/login" className="text-slate-600 font-medium">
+    {/* Right side buttons */}
+    <div className="hidden md:flex items-center gap-4">
+      <Link href="/login" className="text-slate-600 font-medium hover:text-slate-900">
         Login
       </Link>
-      <Link href="/signup" className="bg-[#0B1533] text-white px-5 py-3 rounded-xl font-semibold">
+      <Link href="/signup" className="bg-slate-900 text-white px-6 py-3 rounded-xl font-semibold">
         Get Started
       </Link>
     </div>
 
-    {/* Mobile Button */}
+    {/* Mobile button */}
     <button
       className="md:hidden"
       onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -141,7 +143,7 @@ const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   </div>
 
-  {/* Mobile Menu */}
+  {/* Mobile menu */}
   {isMenuOpen && (
     <div className="md:hidden bg-white border-t px-6 py-4 flex flex-col gap-4">
       <Link href="/" onClick={() => setIsMenuOpen(false)}>Home</Link>
@@ -149,13 +151,8 @@ const [isMenuOpen, setIsMenuOpen] = useState(false);
       <Link href="/guides" onClick={() => setIsMenuOpen(false)}>Guides</Link>
       <Link href="/faq" onClick={() => setIsMenuOpen(false)}>FAQ</Link>
       <Link href="/about" onClick={() => setIsMenuOpen(false)}>About</Link>
-
-      <Link href="/login" onClick={() => setIsMenuOpen(false)}>
-        Login
-      </Link>
-      <Link href="/signup" onClick={() => setIsMenuOpen(false)}>
-        Get Started
-      </Link>
+      <Link href="/login" onClick={() => setIsMenuOpen(false)}>Login</Link>
+      <Link href="/signup" onClick={() => setIsMenuOpen(false)}>Get Started</Link>
     </div>
   )}
 </header>
