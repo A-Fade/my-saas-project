@@ -15,16 +15,39 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BuilderPro SaaS",
-  description: "Manage projects, workers & payments",
-  // 🔥 Explicit icon injection setup
+  title: "BuilderPro SaaS - Construction Management Software for Contractors",
+  description:
+    "BuilderPro helps contractors and construction companies manage projects, workers, payments, quotes, invoices and expenses from one powerful dashboard.",
+  keywords: [
+    "construction management software",
+    "contractor software",
+    "builder software",
+    "construction project management",
+    "worker management",
+    "labor tracking",
+    "construction business software",
+    "project tracking",
+    "payment tracking",
+    "construction SaaS",
+  ],
+
   icons: {
     icon: "/icon.png",
     shortcut: "/icon.png",
     apple: "/icon.png",
   },
-};
 
+  openGraph: {
+    title: "BuilderPro SaaS",
+    description:
+      "Construction Management Software for Contractors and Builders.",
+    url: "https://builderprosaas.com",
+    siteName: "BuilderPro SaaS",
+    type: "website",
+  },
+
+  metadataBase: new URL("https://builderprosaas.com"),
+};
 export default function RootLayout({
   children,
 }: {

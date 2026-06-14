@@ -86,8 +86,9 @@ export default function LandingPage() {
             Build Faster. <br />
             <span className="text-slate-300">Manage Better.</span>
           </h1>
-          <p className="text-lg md:text-xl text-slate-500 font-medium mb-12 max-w-2xl mx-auto leading-relaxed">
-            The ultimate management tool for modern contractors. Track projects, labor, and payments with <strong>Builder Pro</strong>.
+<p className="text-lg md:text-xl text-slate-500 font-medium mb-12 max-w-2xl mx-auto leading-relaxed">           Construction management software for contractors and builders.
+  Manage projects, track workers, monitor expenses, create quotes,
+  and handle payments with <strong>Builder Pro</strong>.
           </p>
           <div className="flex flex-col md:flex-row items-center justify-center gap-4">
             <Link href="/login" className="w-full md:w-auto bg-slate-900 text-white px-12 py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-slate-800 transition-all shadow-2xl shadow-slate-200">
@@ -96,6 +97,42 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+{/* Why Choose BuilderPro */}
+<section className="py-24 px-6 bg-white">
+  <div className="max-w-5xl mx-auto">
+    <div className="text-center mb-12">
+      <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">
+        Why Choose BuilderPro?
+      </h2>
+      <p className="text-slate-500 text-lg max-w-2xl mx-auto">
+        Built specifically for contractors, builders, and construction companies.
+      </p>
+    </div>
+
+    <div className="space-y-6 text-center max-w-4xl mx-auto">
+      <p className="text-lg text-slate-600 leading-relaxed">
+        BuilderPro is a modern construction management software designed for
+        contractors, builders, and construction companies. Manage projects,
+        track workers, monitor expenses, create quotes, and handle payments
+        from one simple dashboard.
+      </p>
+
+      <p className="text-lg text-slate-600 leading-relaxed">
+        Whether you manage residential homes, commercial buildings,
+        renovations, or large construction projects, BuilderPro helps you
+        stay organized, reduce delays, and improve productivity.
+      </p>
+
+      <p className="text-lg text-slate-600 leading-relaxed">
+        With real-time project tracking, worker management, payment
+        monitoring, and business reporting tools, BuilderPro gives
+        construction professionals everything they need to run their
+        business efficiently and grow faster.
+      </p>
+    </div>
+  </div>
+</section>
 
       {/* Features Grid */}
       <section id="features" className="py-24 bg-slate-50/50">
