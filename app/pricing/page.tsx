@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 export default function PricingPage() {
   const router = useRouter();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-
+const [isMenuOpen, setIsMenuOpen] = useState(false);
   // 🚀 BACKGROUND SCRIPT PRELOADER
   useEffect(() => {
     if (typeof window !== "undefined" && !((window as any).Razorpay)) {
@@ -99,69 +99,66 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-white">
 
-      {/* Navbar */}
-      <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+   {/* Navbar */}
+<header className="sticky top-0 z-50 bg-white border-b border-slate-200">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
 
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#0B1533] rounded-xl flex items-center justify-center text-white font-bold">
-              B
-            </div>
-            <span className="text-2xl md:text-3xl font-bold text-[#0B1533]">
-              BuilderPro
-            </span>
-          </Link>
+    <Link href="/" className="flex items-center gap-3">
+      <div className="w-10 h-10 bg-[#0B1533] rounded-xl flex items-center justify-center text-white font-bold">
+        B
+      </div>
+      <span className="text-2xl md:text-3xl font-bold text-[#0B1533]">
+        BuilderPro
+      </span>
+    </Link>
 
-          <nav className="hidden md:flex items-center gap-8">
-            <Link
-              href="/"
-              className="font-semibold text-slate-600 hover:text-[#0B1533]"
-            >
-              Home
-            </Link>
-            <Link
-              href="/pricing"
-              className="font-semibold text-[#0B1533]"
-            >
-              Pricing
-            </Link>
-             <Link
-              href="/guides"
-              className="font-semibold text-[#0B1533]"
-            >
-              Guides
-            </Link>
-             <Link
-              href="/faq"
-              className="font-semibold text-[#0B1533]"
-            >
-              FAQ
-            </Link>
-             <Link
-              href="/about"
-              className="font-semibold text-[#0B1533]"
-            >
-              About
-            </Link>
-          </nav>
+    {/* Desktop Menu */}
+    <nav className="hidden md:flex items-center gap-8">
+      <Link href="/" className="font-semibold text-slate-600 hover:text-[#0B1533]">Home</Link>
+      <Link href="/pricing" className="font-semibold text-[#0B1533]">Pricing</Link>
+      <Link href="/guides" className="font-semibold text-[#0B1533]">Guides</Link>
+      <Link href="/faq" className="font-semibold text-[#0B1533]">FAQ</Link>
+      <Link href="/about" className="font-semibold text-[#0B1533]">About</Link>
+    </nav>
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="text-slate-600 font-medium"
-            >
-              Login
-            </Link>
-            <Link
-              href="/signup"
-              className="bg-[#0B1533] text-white px-5 py-3 rounded-xl font-semibold"
-            >
-              Get Started
-            </Link>
-          </div>
+    {/* Right buttons (Desktop) */}
+    <div className="hidden md:flex items-center gap-3">
+      <Link href="/login" className="text-slate-600 font-medium">
+        Login
+      </Link>
+      <Link href="/signup" className="bg-[#0B1533] text-white px-5 py-3 rounded-xl font-semibold">
+        Get Started
+      </Link>
+    </div>
 
-        </div>
-      </header>
+    {/* Mobile Button */}
+    <button
+      className="md:hidden"
+      onClick={() => setIsMenuOpen(!isMenuOpen)}
+    >
+      {isMenuOpen ? "✕" : "☰"}
+    </button>
+
+  </div>
+
+  {/* Mobile Menu */}
+  {isMenuOpen && (
+    <div className="md:hidden bg-white border-t px-6 py-4 flex flex-col gap-4">
+      <Link href="/" onClick={() => setIsMenuOpen(false)}>Home</Link>
+      <Link href="/pricing" onClick={() => setIsMenuOpen(false)}>Pricing</Link>
+      <Link href="/guides" onClick={() => setIsMenuOpen(false)}>Guides</Link>
+      <Link href="/faq" onClick={() => setIsMenuOpen(false)}>FAQ</Link>
+      <Link href="/about" onClick={() => setIsMenuOpen(false)}>About</Link>
+
+      <Link href="/login" onClick={() => setIsMenuOpen(false)}>
+        Login
+      </Link>
+      <Link href="/signup" onClick={() => setIsMenuOpen(false)}>
+        Get Started
+      </Link>
+    </div>
+  )}
+</header>
 
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-20">
