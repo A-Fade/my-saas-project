@@ -17,6 +17,13 @@ export default function Dashboard() {
     allProjects: [] as any[],
   });
   
+  // ⚡ Plan aur Limits ke liye state variable joda gaya hai
+  const [userProfile, setUserProfile] = useState({
+    plan: "free",
+    item_limit: 3,
+    items_count: 0
+  });
+  
   const [view, setView] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -34,7 +41,7 @@ export default function Dashboard() {
       // 🛡️ SUBSCRIPTION SECURITY & 30-DAY AUTO LOCK CHECK
       const { data: profile, error: profileError } = await supabase
         .from("profiles") // Database table target check
-        .select("plan_status, plan_expiry")
+        .select("plan_status, plan_expiry, plan, item_limit, items_count") // Naye columns fetch kiye gaye hain
         .eq("id", userId)
         .single();
 
@@ -51,6 +58,13 @@ export default function Dashboard() {
         router.push("/pricing"); // Core Redirect parameter
         return;
       }
+
+      // Safely set user profile values for limits check
+      setUserProfile({
+        plan: profile.plan || "free",
+        item_limit: profile.item_limit ?? 3,
+        items_count: profile.items_count ?? 0
+      });
 
       // Agar subscription token check true hai tabhi baki ka data call chalega
       const now = new Date();
@@ -100,6 +114,35 @@ export default function Dashboard() {
         <div className="mb-10">
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Dashboard</h1>
         </div>
+        {/* ⚡ User Profile aur Active Plan Status Badge */}
+        <div className="mb-6 flex flex-wrap items-center gap-3 bg-white p-4 rounded-xl border border-slate-200">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Active Subscription:</span>
+          <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase border ${
+            userProfile.plan === 'business' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+            userProfile.plan === 'pro' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+            'bg-slate-100 text-slate-600 border-slate-200'
+          }`}>
+            {userProfile.plan === 'business' ? '👑 ' : ''}{userProfile.plan} Plan
+          </span>
+          <span className="text-xs text-slate-500 font-medium ml-auto">
+            Usage: <strong>{userProfile.items_count}</strong> / {userProfile.plan === 'business' ? 'Unlimited' : userProfile.item_limit} Items
+          </span>
+        </div>
+
+        {/* 👑 BUSINESS ONLY PREMIUM PANEL (Sirf Business Plan walo ko dikhega, Design safe) */}
+        {userProfile.plan === "business" && (
+          <div className="mb-8 p-5 border border-amber-200 bg-amber-50/40 rounded-2xl flex items-start gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
+            <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-amber-500 text-white shadow-sm shrink-0">
+              👑
+            </div>
+            <div>
+              <h3 className="font-bold text-amber-900 text-sm uppercase tracking-wider">Premium Business Analytics</h3>
+              <p className="text-xs text-amber-700 mt-1 leading-relaxed">
+                Welcome VIP Corporate Partner! Your unlimited item creation, priority cloud syncing, and executive features are fully active.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* 6 PROFESSIONAL COLUMNS (CLEAN WHITE) */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-12">
