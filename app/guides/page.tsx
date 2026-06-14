@@ -72,9 +72,7 @@ export default function GuidesPage() {
 
     <div className="min-h-screen bg-white pt-32">
       {/* Tumhara pura existing Guides page content */}
-    </div>
-  </>
-);
+ 
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-6 py-10">
 
@@ -230,5 +228,7 @@ export default function GuidesPage() {
 
       </div>
     </div>
-    
+      </div>
+  </>
+);
 }
