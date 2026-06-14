@@ -17,10 +17,12 @@ export default function Dashboard() {
     allProjects: [] as any[],
   });
   
-  // ⚡ Plan aur Limits ke liye state variable joda gaya hai
+  // ⚡ Plan aur exact limits track karne ki state variable
   const [userProfile, setUserProfile] = useState({
     plan: "free",
-    item_limit: 3,
+    item_limit: 1,       // Projects Limit (Starter: 1, Pro: 10)
+    workers_limit: 2,    // Workers Limit (Starter: 2, Pro: 120)
+    clients_limit: 1,    // Clients Limit (Starter: 1, Pro: 10)
     items_count: 0
   });
   
@@ -40,8 +42,8 @@ export default function Dashboard() {
 
       // 🛡️ SUBSCRIPTION SECURITY & 30-DAY AUTO LOCK CHECK
       const { data: profile, error: profileError } = await supabase
-        .from("profiles") // Database table target check
-        .select("plan_status, plan_expiry, plan, item_limit, items_count") // Naye columns fetch kiye gaye hain
+        .from("profiles") 
+        .select("plan_status, plan_expiry, plan, items_count") 
         .eq("id", userId)
         .single();
 
@@ -59,10 +61,28 @@ export default function Dashboard() {
         return;
       }
 
-      // Safely set user profile values for limits check
+      // 📊 Plan features mapping logic as per requirements
+      let pLimit = 1;   // Starter (Free) Projects
+      let wLimit = 2;   // Starter (Free) Workers
+      let cLimit = 1;   // Starter (Free) Clients
+
+      const currentPlan = profile.plan || "free";
+
+      if (currentPlan.toLowerCase() === "pro") {
+        pLimit = 10;    // Pro: 10 Projects
+        wLimit = 120;   // Pro: 120 Workers
+        cLimit = 10;    // Pro: 10 Clients
+      } else if (currentPlan.toLowerCase() === "business") {
+        pLimit = 99999; // Business: Unlimited Projects
+        wLimit = 99999; // Business: Unlimited Workers
+        cLimit = 99999; // Business: Unlimited Clients
+      }
+
       setUserProfile({
-        plan: profile.plan || "free",
-        item_limit: profile.item_limit ?? 3,
+        plan: currentPlan,
+        item_limit: pLimit,
+        workers_limit: wLimit,
+        clients_limit: cLimit,
         items_count: profile.items_count ?? 0
       });
 
@@ -114,23 +134,37 @@ export default function Dashboard() {
         <div className="mb-10">
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Dashboard</h1>
         </div>
-        {/* ⚡ User Profile aur Active Plan Status Badge */}
-        <div className="mb-6 flex flex-wrap items-center gap-3 bg-white p-4 rounded-xl border border-slate-200">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Active Subscription:</span>
-          <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase border ${
-            userProfile.plan === 'business' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-            userProfile.plan === 'pro' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-            'bg-slate-100 text-slate-600 border-slate-200'
-          }`}>
-            {userProfile.plan === 'business' ? '👑 ' : ''}{userProfile.plan} Plan
-          </span>
-          <span className="text-xs text-slate-500 font-medium ml-auto">
-            Usage: <strong>{userProfile.items_count}</strong> / {userProfile.plan === 'business' ? 'Unlimited' : userProfile.item_limit} Items
-          </span>
+        {/* ⚡ Dynamic Plan Status Meter & Active Plan Badge */}
+        <div className="mb-6 flex flex-wrap items-center gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Current Plan:</span>
+            <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase border ${
+              userProfile.plan.toLowerCase() === 'business' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+              userProfile.plan.toLowerCase() === 'pro' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+              'bg-emerald-50 text-emerald-700 border-emerald-200'
+            }`}>
+              {userProfile.plan.toLowerCase() === 'business' ? '👑 ' : ''}{userProfile.plan === 'free' ? 'Starter' : userProfile.plan}
+            </span>
+          </div>
+          
+          {/* Live System Resource Counters */}
+          <div className="flex flex-wrap items-center gap-4 md:gap-6 ml-auto text-xs font-medium text-slate-600">
+            <div>
+              Projects: <strong className="text-slate-900">{data.totalProjects}</strong> / {userProfile.plan.toLowerCase() === 'business' ? '∞' : userProfile.item_limit}
+            </div>
+            <div className="w-px h-3 bg-slate-200 hidden sm:block"></div>
+            <div>
+              Workers: <strong className="text-slate-900">{data.totalWorkers}</strong> / {userProfile.plan.toLowerCase() === 'business' ? '∞' : userProfile.workers_limit}
+            </div>
+            <div className="w-px h-3 bg-slate-200 hidden sm:block"></div>
+            <div>
+              Clients Allowed: <strong className="text-slate-900">{userProfile.plan.toLowerCase() === 'business' ? 'Unlimited' : userProfile.clients_limit}</strong>
+            </div>
+          </div>
         </div>
 
-        {/* 👑 BUSINESS ONLY PREMIUM PANEL (Sirf Business Plan walo ko dikhega, Design safe) */}
-        {userProfile.plan === "business" && (
+        {/* 👑 PREMIUM BUSINESS ANALYTICS MODULE */}
+        {userProfile.plan.toLowerCase() === "business" && (
           <div className="mb-8 p-5 border border-amber-200 bg-amber-50/40 rounded-2xl flex items-start gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
             <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-amber-500 text-white shadow-sm shrink-0">
               👑
@@ -138,7 +172,7 @@ export default function Dashboard() {
             <div>
               <h3 className="font-bold text-amber-900 text-sm uppercase tracking-wider">Premium Business Analytics</h3>
               <p className="text-xs text-amber-700 mt-1 leading-relaxed">
-                Welcome VIP Corporate Partner! Your unlimited item creation, priority cloud syncing, and executive features are fully active.
+                Welcome VIP Corporate Partner! Your unlimited resource logging, premium reporting metrics, and advanced modules are active.
               </p>
             </div>
           </div>
@@ -153,6 +187,7 @@ export default function Dashboard() {
           <StatCard title="Today Spend" value={`₹${totalTodaySpend}`} icon={<Package size={18}/>} />
           <StatCard onClick={() => setView('history')} title="History" value="View" icon={<History size={18}/>} />
         </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           {/* Project List */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -160,14 +195,19 @@ export default function Dashboard() {
               <h3 className="font-semibold text-sm text-slate-700 uppercase tracking-wider">Project Status</h3>
             </div>
             <div className="p-2 max-h-[400px] overflow-y-auto">
-              {data.allProjects.map(p => (
-                <div key={p.id} onClick={() => router.push(`/projects/${p.id}`)} className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer border border-transparent hover:border-slate-100">
-                  <span className="font-medium text-slate-800">{p.name}</span>
-                  <span className={`text-[10px] font-bold px-3 py-1 rounded-full border ${p.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{p.status}</span>
-                </div>
-              ))}
+              {data.allProjects.length === 0 ? (
+                <p className="text-center py-20 text-slate-400 text-sm">No projects added yet</p>
+              ) : (
+                data.allProjects.map(p => (
+                  <div key={p.id} onClick={() => router.push(`/projects/${p.id}`)} className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer border border-transparent hover:border-slate-100">
+                    <span className="font-medium text-slate-800">{p.name}</span>
+                    <span className={`text-[10px] font-bold px-3 py-1 rounded-full border ${p.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{p.status}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
+
           {/* Material Expenses */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
