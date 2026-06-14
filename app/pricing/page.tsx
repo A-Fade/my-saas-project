@@ -125,6 +125,24 @@ export default function PricingPage() {
             >
               Pricing
             </Link>
+             <Link
+              href="/guides"
+              className="font-semibold text-[#0B1533]"
+            >
+              Guides
+            </Link>
+             <Link
+              href="/faq"
+              className="font-semibold text-[#0B1533]"
+            >
+              FAQ
+            </Link>
+             <Link
+              href="/about"
+              className="font-semibold text-[#0B1533]"
+            >
+              About
+            </Link>
           </nav>
 
           <div className="flex items-center gap-3">
