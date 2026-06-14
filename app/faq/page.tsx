@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Navbar from "../components/Navbar";
 import {
   Search,
   ChevronDown,
@@ -87,9 +88,11 @@ export default function FAQPage() {
     { name: "Payments", icon: <CreditCard size={16} /> },
     { name: "Account", icon: <Settings size={16} /> },
   ];
+return (
+  <>
+    <Navbar />
 
-  return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-32">
       <div className="max-w-7xl mx-auto px-6 py-10">
 
         {/* Hero */}
@@ -256,7 +259,8 @@ export default function FAQPage() {
           </div>
 
         </div>
-      </div>
+           </div>
     </div>
+  </>
   );
 }
