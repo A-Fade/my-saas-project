@@ -1,18 +1,18 @@
 "use client";
-import { useEffect, useState, Suspense } from "react"; // Suspense import kiya gaya hai
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import toast from "react-hot-toast";
 
-// 1️⃣ CORE LOGIC COMPONENT (Yahan search params fetch honge)
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [status, setStatus] = useState("Verifying payment...");
+  const [isSuccess, setIsSuccess] = useState(false); // Button dikhane ke liye state
 
   useEffect(() => {
     async function updatePlan() {
-      const planName = searchParams.get("plan");
+      const planName = searchParams.get("plan"); // 'pro' ya 'business'
       const userId = searchParams.get("user_id");
 
       if (!planName || !userId) {
@@ -21,25 +21,27 @@ function PaymentSuccessContent() {
       }
 
       try {
-        const expiryDate = new Date();
-        expiryDate.setDate(expiryDate.getDate() + 30); // 30 Days Monthly Expiry
+        // Plan ke mutabik item limits set karein
+        let limit = 3; // default free
+        if (planName.toLowerCase() === "pro") limit = 10;
+        if (planName.toLowerCase() === "business") limit = 99999; // Unlimited
 
+        // Database columns ko update karein (Humne dono variables rakh diye hain safe side ke liye)
         const { error } = await supabase
           .from("profiles")
           .update({
-            plan_status: planName,
-            plan_expiry: expiryDate.toISOString(),
+            plan: planName.toLowerCase(),       // Hamari SQL table ke mutabik
+            item_limit: limit,                 // Item limit update
+            plan_status: planName.toLowerCase(), // Aapke purane schema ke liye
+            plan_expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 Days expiry
           })
           .eq("id", userId);
 
         if (error) throw error;
 
         toast.success("Payment Successful! Plan activated.");
-        setStatus("Success! Redirecting to dashboard...");
-        
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 2000);
+        setStatus("Success! Your account has been upgraded.");
+        setIsSuccess(true); // Success button active karein
 
       } catch (err: any) {
         console.error(err);
@@ -48,23 +50,32 @@ function PaymentSuccessContent() {
     }
 
     updatePlan();
-  }, [searchParams, router]);
+  }, [searchParams]);
 
   return (
     <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-md w-full text-center">
-      <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-xl">
-        ✓
+      <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-xl ${isSuccess ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
+        {isSuccess ? "✓" : "⚡"}
       </div>
       <h2 className="text-xl font-bold text-slate-900 mb-2">Payment Verification</h2>
-      <p className="text-slate-600 text-sm font-medium">{status}</p>
+      <p className="text-slate-600 text-sm font-medium mb-6">{status}</p>
+
+      {/* 👇 GO TO DASHBOARD BUTTON (Jo aapko chahiye tha) */}
+      {isSuccess && (
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl transition-colors duration-200 shadow-sm"
+        >
+          Go to Dashboard
+        </button>
+      )}
     </div>
   );
 }
 
-// 2️⃣ MAIN EXPORT WRAPPER (Wrapping with a solid Suspense boundary to fix Vercel error)
 export default function PaymentSuccessPage() {
   return (
-    <div className="h-screen flex items-center justify-center bg-slate-50 font-sans">
+    <div className="h-screen flex items-center justify-center bg-slate-50 font-sans p-4">
       <Suspense 
         fallback={
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-md w-full text-center">
