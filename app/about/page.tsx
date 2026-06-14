@@ -1,28 +1,32 @@
+import Navbar from "../components/Navbar";
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-white text-slate-900">
-      <section className="pt-32 pb-20 px-6">
-        <div className="max-w-5xl mx-auto text-center">
-          <div className="inline-flex items-center border border-slate-200 px-4 py-2 rounded-full mb-6">
-            <span className="text-xs font-bold tracking-widest uppercase text-slate-500">
-              About BuilderPro
-            </span>
+    <>
+      <Navbar />
+
+      <div className="min-h-screen bg-white text-slate-900">
+        <section className="pt-32 pb-20 px-6">
+          <div className="max-w-5xl mx-auto text-center">
+            <div className="inline-flex items-center border border-slate-200 px-4 py-2 rounded-full mb-6">
+              <span className="text-xs font-bold tracking-widest uppercase text-slate-500">
+                About BuilderPro
+              </span>
+            </div>
+
+            <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6">
+              Built For Modern
+              <br />
+              Contractors
+            </h1>
+
+            <p className="text-lg md:text-xl text-slate-500 max-w-3xl mx-auto leading-relaxed">
+              BuilderPro is a construction management platform designed to help
+              contractors, builders, and construction companies manage projects,
+              workers, payments, and business operations from one simple dashboard.
+            </p>
           </div>
-
-          <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6">
-            Built For Modern
-            <br />
-            Contractors
-          </h1>
-
-          <p className="text-lg md:text-xl text-slate-500 max-w-3xl mx-auto leading-relaxed">
-            BuilderPro is a construction management platform designed to help
-            contractors, builders, and construction companies manage projects,
-            workers, payments, and business operations from one simple dashboard.
-          </p>
-        </div>
-      </section>
+        </section>
 
       <section className="py-20 px-6 border-t border-slate-200">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-16">
@@ -104,6 +108,6 @@ export default function AboutPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }
-

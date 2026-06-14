@@ -62,11 +62,11 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden md:flex items-center gap-8 font-bold text-[11px] uppercase tracking-[0.15em] text-slate-500">
-            <a href="pricing" className="hover:text-slate-900 transition-colors">Pricing</a>
-            <a href="#features" className="hover:text-slate-900 transition-colors">Features</a>
-            <a href="guides" className="hover:text-slate-900 transition-colors">How it works</a>
-            <a href="faq" className="hover:text-slate-900 transition-colors">FAQ</a>
-            <a href="about" className="hover:text-slate-900 transition-colors">About</a>
+            <Link href="/pricing" className="hover:text-slate-900 transition-colors">Pricing</Link>
+            <Link href="#features" className="hover:text-slate-900 transition-colors">Features</Link>
+            <Link href="/guides" className="hover:text-slate-900 transition-colors">How it works</Link>
+            <Link href="/faq" className="hover:text-slate-900 transition-colors">FAQ</Link>
+            <Link href="/about" className="hover:text-slate-900 transition-colors">About</Link>
             <Link href="/login" className="bg-slate-900 text-white px-8 py-3.5 rounded-xl hover:bg-slate-800 transition-all shadow-md">Get Started</Link>
           </div>
 
