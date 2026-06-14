@@ -21,7 +21,7 @@ export default function Navbar() {
               Pricing
             </Link>
 
-            <Link href="/guide" className="font-semibold text-slate-600 hover:text-slate-900">
+            <Link href="/guides" className="font-semibold text-slate-600 hover:text-slate-900">
               Guide
             </Link>
 
