@@ -73,6 +73,38 @@ export default function LandingPage() {
           <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? <X /> : <Menu />}
           </button>
+
+          {isMenuOpen && (
+  <div className="md:hidden absolute top-20 left-0 w-full bg-white border-b border-slate-100 shadow-lg">
+    <div className="flex flex-col gap-5 p-6 font-semibold text-slate-600">
+
+      <Link href="/pricing" onClick={() => setIsMenuOpen(false)}>
+        Pricing
+      </Link>
+
+      <Link href="#features" onClick={() => setIsMenuOpen(false)}>
+        Features
+      </Link>
+
+      <Link href="/guides" onClick={() => setIsMenuOpen(false)}>
+        How it works
+      </Link>
+
+      <Link href="/faq" onClick={() => setIsMenuOpen(false)}>
+        FAQ
+      </Link>
+
+      <Link href="/about" onClick={() => setIsMenuOpen(false)}>
+        About
+      </Link>
+
+      <Link href="/login" className="text-slate-900 font-bold" onClick={() => setIsMenuOpen(false)}>
+        Get Started
+      </Link>
+
+    </div>
+  </div>
+)}
         </div>
       </nav>
 
