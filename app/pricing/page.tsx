@@ -94,6 +94,13 @@ export default function PricingPage() {
         theme: {
           color: "#0B1533",
         },
+         // 👇 Yeh naya handler joda gaya hai jo page crash nahi hone dega
+        handler: function (response: any) {
+          if (response.razorpay_payment_id) {
+            toast.success("Payment Received! Redirecting...");
+            router.push(`/payment-success?plan=${planName}&user_id=${user.id}`);
+          }
+        },
       };
 
       const rzp = new (window as any).Razorpay(options);
