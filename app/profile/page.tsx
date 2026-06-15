@@ -10,6 +10,10 @@ import {
   Shield,
   Calendar,
   Clock,
+  Briefcase,
+  KeyRound,
+  UserCheck,
+  Zap
 } from "lucide-react";
 
 export default function ProfilePage() {
@@ -23,7 +27,6 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [uploading, setUploading] = useState(false);
 
-  // ⚡ Plan, limits aur expiry metadata tracking ke liye states add kiye hain
   const [subscription, setSubscription] = useState({
     plan: "free",
     item_limit: 1,
@@ -68,7 +71,6 @@ export default function ProfilePage() {
       setCreatedAt(data.created_at || "");
       setAvatarUrl(data.avatar_url || "");
       
-      // Live subscription columns ko state sync me feed kiya gaya hai
       setSubscription({
         plan: data.plan || "free",
         item_limit: data.item_limit ?? 1,
@@ -195,340 +197,264 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="p-8">
-        <h2 className="text-xl font-semibold">
-          Loading Profile...
-        </h2>
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-slate-800 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Loading Security Vault...</p>
+        </div>
       </div>
     );
   }
 
   return (    
-    <div className="p-4 sm:p-6 md:p-8 bg-slate-50 min-h-screen">
+    <div className="p-6 md:p-12 bg-[#F8FAFC] min-h-screen font-sans antialiased text-slate-900 max-w-[1400px] mx-auto w-full">
 
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
-          Profile
-        </h1>
-
-        <p className="text-slate-500 mt-2">
-          Manage your account information and security.
-        </p>
+      {/* Modern Dynamic Header Component */}
+      <div className="mb-12 border-b border-slate-200/60 pb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 md:text-4xl">Account Settings</h1>
+          <p className="text-slate-500 mt-2 text-sm font-medium">Control security access, subscription matrices, and personalized parameters.</p>
+        </div>
+        <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border border-slate-200/80 shadow-sm">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+          <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Vault Synchronized</span>
+        </div>
       </div>
 
-      {/* ✨ LIVE SUBSCRIPTION METER SECTION (Naya Module bina purani design chhede) */}
-      <div className="bg-white rounded-3xl border p-5 md:p-8 mb-8">
-        <h2 className="text-2xl md:text-3xl font-bold mb-2">
-          Subscription Status
-        </h2>
-        <p className="text-slate-500 mb-6">
-          Review your live billing profile and features constraint limits.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Active Plan</p>
-            <p className="text-2xl font-black text-[#0B1533] uppercase">
+      {/* 📊 PREMIUM SUBSCRIPTION INSIGHT METRICS CARDS */}
+      <div className="mb-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        {/* Metric 1: Plan Status */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between group">
+          <div>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Active Plan</p>
+            <h3 className="text-2xl font-black text-[#0B1533] uppercase">
               {subscription.plan === 'free' ? 'Starter' : subscription.plan}
-            </p>
+            </h3>
           </div>
-          <div className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Project Limit</p>
-            <p className="text-2xl font-black text-slate-800">
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold ${
+            subscription.plan === 'business' ? 'bg-amber-50 text-amber-600' :
+            subscription.plan === 'pro' ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-600'
+          }`}>
+            <Zap size={20} className={subscription.plan === 'business' ? 'fill-amber-500/20' : ''} />
+          </div>
+        </div>
+
+        {/* Metric 2: Allocation Allocation */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Resource Allocation</p>
+            <h3 className="text-2xl font-black text-slate-800">
               {subscription.plan.toLowerCase() === 'business' ? 'Unlimited' : `${subscription.item_limit} Projects`}
-            </p>
+            </h3>
           </div>
-          <div className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Renews / Expires On</p>
-            <p className="text-sm font-bold text-slate-700 mt-1">
+          <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600">
+            <Briefcase size={20} />
+          </div>
+        </div>
+
+        {/* Metric 3: Time Expiry Grid */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Cycle Expiration</p>
+            <h3 className="text-lg font-bold text-slate-700 mt-1">
               {subscription.plan_expiry 
                 ? new Date(subscription.plan_expiry).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-                : "No Active Expiry"}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Profile Information */}
-      <div className="bg-white rounded-3xl border p-5 md:p-8 mb-8">
-
-        <h2 className="text-2xl md:text-3xl font-bold mb-2">
-          Profile Information
-        </h2>
-
-        <p className="text-slate-500 mb-8">
-          Update your personal details.
-        </p>
-
-        <div className="grid lg:grid-cols-[1fr_250px] gap-8">
-
-          {/* Photo */}
-          <div className="flex flex-col items-center justify-center order-first lg:order-last">
-
-            <div className="w-40 h-40 md:w-44 md:h-44 rounded-3xl bg-slate-100 overflow-hidden flex items-center justify-center">
-
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <User
-                  size={80}
-                  className="text-slate-500"
-                />
-              )}
-
-            </div>
-
-            <input
-              type="file"
-              accept="image/*"
-              id="avatarInput"
-              className="hidden"
-              onChange={handleAvatarChange}
-            />
-
-            <div className="flex flex-col sm:flex-row gap-3 mt-5">
-
-              <button
-                onClick={() =>
-                  document
-                    .getElementById("avatarInput")
-                    ?.click()
-                }
-                className="border px-5 py-2 rounded-xl"
-              >
-                {uploading
-                  ? "Uploading..."
-                  : "Add Photo"}
-              </button>
-
-              <button
-                onClick={removePhoto}
-                className="border px-5 py-2 rounded-xl text-red-500"
-              >
-                Remove Photo
-              </button>
-
-            </div>
-
-          </div>
-
-          {/* Form */}
-          <div>
-
-            <label className="block mb-2 font-medium">
-              Full Name
-            </label>
-
-            <input
-              value={fullName}
-              onChange={(e) =>
-                setFullName(e.target.value)
-              }
-              className="w-full border rounded-xl px-4 py-3"
-            />
-
-            <label className="block mb-2 mt-6 font-medium">
-              Email Address
-            </label>
-
-            <input
-              value={email}
-              disabled
-              className="w-full border rounded-xl px-4 py-3 bg-slate-50"
-            />
-
-            <button
-              onClick={saveProfile}
-              className="mt-8 w-full sm:w-auto bg-slate-900 text-white px-8 py-3 rounded-xl hover:bg-slate-800"
-            >
-              Save Changes
-            </button>
-
-          </div>
-
-        </div>
-      </div>
-
-      {/* Password Section */}
-      <div className="bg-white rounded-3xl border p-5 md:p-8 mb-8">
-
-        <h2 className="text-2xl md:text-3xl font-bold mb-2">
-          Change Password
-        </h2>
-
-        <p className="text-slate-500 mb-8">
-          Update your password to keep your account secure.
-        </p>
-
-        <div className="grid lg:grid-cols-[1fr_300px] gap-10">
-
-          <div>
-
-            <label className="block mb-2 font-medium">
-              Current Password
-            </label>
-
-            <div className="relative">
-              <input
-                type={showCurrent ? "text" : "password"}
-                value={currentPassword}
-                onChange={(e) =>
-                  setCurrentPassword(e.target.value)
-                }
-                className="w-full border rounded-xl px-4 py-3"
-              />
-              <button
-                type="button"
-                onClick={() =>
-                  setShowCurrent(!showCurrent)
-                }
-                className="absolute right-4 top-4"
-              >
-                {showCurrent ? <EyeOff /> : <Eye />}
-              </button>
-            </div>
-
-            <label className="block mb-2 mt-5 font-medium">
-              New Password
-            </label>
-
-            <div className="relative">
-              <input
-                type={showNew ? "text" : "password"}
-                value={newPassword}
-                onChange={(e) =>
-                  setNewPassword(e.target.value)
-                }
-                className="w-full border rounded-xl px-4 py-3"
-              />
-
-              <button
-                type="button"
-                onClick={() =>
-                  setShowNew(!showNew)
-                }
-                className="absolute right-4 top-4"
-              >
-                {showNew ? <EyeOff /> : <Eye />}
-              </button>
-            </div>
-
-            <label className="block mb-2 mt-5 font-medium">
-              Confirm Password
-            </label>
-
-            <div className="relative">
-              <input
-                type={showConfirm ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) =>
-                  setConfirmPassword(e.target.value)
-                }
-                className="w-full border rounded-xl px-4 py-3"
-              />
-
-              <button
-                type="button"
-                onClick={() =>
-                  setShowConfirm(!showConfirm)
-                }
-                className="absolute right-4 top-4"
-              >
-                {showConfirm ? <EyeOff /> : <Eye />}
-              </button>
-            </div>
-
-            <button
-              onClick={updatePassword}
-              className="mt-8 w-full sm:w-auto bg-slate-900 text-white px-8 py-3 rounded-xl hover:bg-slate-800"
-            >
-              Update Password
-            </button>
-
-          </div>
-
-          <div className="bg-slate-50 rounded-3xl p-6">
-
-            <Lock className="mb-5 text-blue-600" />
-
-            <h3 className="font-bold text-lg mb-4">
-              Password Tips
+                : "Continuous Access"}
             </h3>
-
-            <ul className="space-y-2 text-slate-600 text-sm">
-              <li>• Use at least 8 characters</li>
-              <li>• Include uppercase and lowercase</li>
-              <li>• Include a number</li>
-              <li>• Include a special character</li>
-            </ul>
-
           </div>
-
+          <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600">
+            <Calendar size={20} />
+          </div>
         </div>
-
       </div>
 
-      {/* Account Info */}
-      <div className="bg-white rounded-3xl border p-5 md:p-8">
-
-        <h2 className="text-2xl md:text-3xl font-bold mb-2">
-          Account Information
-        </h2>
-
-        <p className="text-slate-500 mb-8">
-          View your account details and activity.
-        </p>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-
-          <div className="p-4 rounded-2xl bg-slate-50">
-            <Shield className="mb-3 text-slate-500" />
-            <p className="text-sm text-slate-500">
-              User ID
-            </p>
-            <p className="font-medium break-all">
-              {userId}
-            </p>
+      {/* Main Structural Twin Grid Columns Wrapper */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8 items-start">
+        
+        {/* Profile Details Panel Box */}
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 md:p-8 shadow-sm lg:col-span-2">
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-5 mb-8">
+            <div className="w-8 h-8 rounded-lg bg-[#0B1533] flex items-center justify-center text-white">
+              <UserCheck size={16} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Personal Information</h2>
+              <p className="text-xs text-slate-400 font-medium">Identity credentials synchronized with core databases</p>
+            </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50">
-            <User className="mb-3 text-slate-500" />
-            <p className="text-sm text-slate-500">
-              Account Type
-            </p>
-            <p className="font-medium">
-              Admin
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-8 items-start">
+            
+            {/* High-End Avatar Uploader Frame Layout */}
+            <div className="flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-200/60 rounded-2xl">
+              <div className="w-32 h-32 rounded-2xl overflow-hidden bg-white flex items-center justify-center shadow-inner border border-slate-200 relative group">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Profile Picture" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                ) : (
+                  <User size={48} className="text-slate-400" />
+                )}
+                {uploading && (
+                  <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[1px] flex items-center justify-center text-white text-xs font-bold animate-pulse">
+                    Saving...
+                  </div>
+                )}
+              </div>
+
+              <input type="file" accept="image/*" id="avatarInput" className="hidden" onChange={handleAvatarChange} />
+
+              <div className="flex flex-col gap-2 w-full mt-4">
+                <button onClick={() => document.getElementById("avatarInput")?.click()} className="w-full bg-white hover:bg-slate-100 border border-slate-200 font-semibold text-xs py-2 px-3 rounded-xl transition-all shadow-sm">
+                  Upload Image
+                </button>
+                {avatarUrl && (
+                  <button onClick={removePhoto} className="w-full bg-red-50 hover:bg-red-100/80 text-red-600 font-semibold text-xs py-2 px-3 rounded-xl transition-all">
+                    Delete Picture
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Core Identity Text Forms Controls */}
+            <div className="space-y-5 w-full">
+              <div>
+                <label className="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Legal Full Name</label>
+                <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full border border-slate-200 focus:border-slate-400 focus:ring-0 rounded-xl px-4 py-3 font-medium transition-colors text-sm" placeholder="John Doe" />
+              </div>
+              
+              <div>
+                <label className="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Primary Authorized Email</label>
+                <input value={email} disabled className="w-full border border-slate-200/80 rounded-xl px-4 py-3 font-medium bg-slate-50/80 text-slate-400 text-sm cursor-not-allowed" />
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 flex justify-end">
+                <button onClick={saveProfile} className="w-full sm:w-auto bg-[#0B1533] hover:bg-[#15234d] text-white px-8 py-3 rounded-xl font-bold text-sm shadow-sm hover:shadow transition-all active:scale-[0.98]">
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Dynamic Tips & Meta Statistics Panel Box */}
+        <div className="bg-slate-900 rounded-3xl p-6 md:p-8 text-white shadow-xl flex flex-col justify-between h-full min-h-[440px]">
+          <div>
+            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white mb-6">
+              <KeyRound size={18} />
+            </div>
+            <h3 className="font-black text-xl mb-4 tracking-tight">Security Guidelines</h3>
+            <p className="text-slate-400 text-xs leading-relaxed mb-6">To protect your financial invoices, employee salary records, and database privacy, ensure your credential meets standard cryptography guidelines.</p>
+            
+            <ul className="space-y-3 text-slate-300 text-xs font-medium">
+              <li className="flex items-center gap-2.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                At least 8 cryptographic characters
+              </li>
+              <li className="flex items-center gap-2.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                Include uppercase and lowercase matrix
+              </li>
+              <li className="flex items-center gap-2.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                Include at least 1 numerical value
+              </li>
+              <li className="flex items-center gap-2.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                Include a system symbol character
+              </li>
+            </ul>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50">
-            <Calendar className="mb-3 text-slate-500" />
-            <p className="text-sm text-slate-500">
-              Member Since
-            </p>
-            <p className="font-medium">
-              {createdAt
-                ? new Date(createdAt).toLocaleDateString()
-                : "-"}
-            </p>
+          <div className="border-t border-white/10 pt-6 mt-6">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-slate-400 font-bold">
+              <Shield size={12} className="text-blue-400" />
+              AES-256 Encryption Active
+            </div>
           </div>
+        </div>
+      </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50">
-            <Clock className="mb-3 text-slate-500" />
-            <p className="text-sm text-slate-500">
-              Status
-            </p>
-            <p className="font-medium text-green-600">
-              Active
-            </p>
+      {/* 🔐 PASSWORD SECURITY MANAGEMENT FRAME */}
+      <div className="bg-white rounded-3xl border border-slate-200 p-5 md:p-8 mb-8 shadow-sm">
+        <div className="flex items-center gap-3 border-b border-slate-100 pb-5 mb-8">
+          <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700">
+            <Lock size={16} />
           </div>
-
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Change Password</h2>
+            <p className="text-xs text-slate-400 font-medium">Update account parameters to secure session authorization tokens</p>
+          </div>
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl">
+          <div className="relative">
+            <label className="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Current Password</label>
+            <div className="relative">
+              <input type={showCurrent ? "text" : "password"} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="w-full border border-slate-200 focus:border-slate-400 focus:ring-0 rounded-xl px-4 py-3 font-medium text-sm transition-colors pr-10" />
+              <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition-colors">
+                {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="relative">
+            <label className="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">New Secure Password</label>
+            <div className="relative">
+              <input type={showNew ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full border border-slate-200 focus:border-slate-400 focus:ring-0 rounded-xl px-4 py-3 font-medium text-sm transition-colors pr-10" />
+              <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition-colors">
+                {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="relative">
+            <label className="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Confirm New Password</label>
+            <div className="relative">
+              <input type={showConfirm ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full border border-slate-200 focus:border-slate-400 focus:ring-0 rounded-xl px-4 py-3 font-medium text-sm transition-colors pr-10" />
+              <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition-colors">
+                {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-6 mt-6 border-t border-slate-100 flex justify-end">
+          <button onClick={updatePassword} className="w-full sm:w-auto bg-[#0B1533] hover:bg-[#15234d] text-white px-8 py-3 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-[0.98]">
+            Update Password
+          </button>
+        </div>
+      </div>
+
+      {/* 📁 PLATFORM METADATA REGISTRATION INVENTORY */}
+      <div className="bg-white rounded-3xl border border-slate-200 p-5 md:p-8 shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+            <Shield size={16} className="mb-3 text-slate-400" />
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">User Token Key</p>
+            <p className="font-semibold text-xs font-mono text-slate-800 break-all mt-1">{userId}</p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+            <User size={16} className="mb-3 text-slate-400" />
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">System Role Type</p>
+            <p className="font-bold text-sm text-slate-800 mt-1">Authorized Root Admin</p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+            <Calendar size={16} className="mb-3 text-slate-400" />
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Verification Date</p>
+            <p className="font-bold text-sm text-slate-800 mt-1">
+              {createdAt ? new Date(createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : "-"}
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+            <Clock size={16} className="mb-3 text-slate-400" />
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Gateway Link Status</p>
+            <p className="font-bold text-sm text-emerald-600 tracking-wide mt-1 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active Verified
+            </p>
+          </div>
+        </div>
       </div>
 
     </div>
