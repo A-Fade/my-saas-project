@@ -253,14 +253,14 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Metric 3: Time Expiry Grid */}
+                {/* Metric 3: Time Expiry Grid (Fixed & Dynamic Version) */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Cycle Expiration</p>
-            <h3 className="text-lg font-bold text-slate-700 mt-1">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Plan Expiries On</p>
+            <h3 className="text-base font-black text-slate-800 mt-1">
               {subscription.plan_expiry 
-                ? new Date(subscription.plan_expiry).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-                : "Continuous Access"}
+                ? new Date(subscription.plan_expiry).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' })
+                : "No Active Plan"}
             </h3>
           </div>
           <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600">
@@ -268,6 +268,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
 
       {/* Main Structural Twin Grid Columns Wrapper */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8 items-start">
