@@ -60,7 +60,7 @@ export default function PricingPage() {
       }
 
       // 2️⃣ AGAR PAID PLAN (PRO / BUSINESS) HAI -> Automatic Ad-Blocker Bypass Redirection
-      const amountInPaise = planName === "pro" ? 100 : 200;
+      const amountInPaise = planName === "pro" ? 49900 : 99900;
       
       // Humara success page jo payment ke baad open hoke database entry karega
       const successRedirectUrl = `${window.location.origin}/payment-success?plan=${planName}&user_id=${user.id}`;
@@ -238,7 +238,7 @@ export default function PricingPage() {
               Best for growing businesses
             </p>
             <div className="mt-6">
-              <span className="text-5xl font-black text-slate-900">₹1</span>
+              <span className="text-5xl font-black text-slate-900">₹499</span>
               <span className="text-slate-500">/month</span>
             </div>
             <button
@@ -268,7 +268,7 @@ export default function PricingPage() {
               For agencies and large teams
             </p>
             <div className="mt-6">
-              <span className="text-5xl font-black text-slate-900">₹2</span>
+              <span className="text-5xl font-black text-slate-900">₹999</span>
               <span className="text-slate-500">/month</span>
             </div>
 
