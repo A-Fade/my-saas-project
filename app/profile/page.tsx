@@ -23,6 +23,13 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [uploading, setUploading] = useState(false);
 
+  // ⚡ Plan, limits aur expiry metadata tracking ke liye states add kiye hain
+  const [subscription, setSubscription] = useState({
+    plan: "free",
+    item_limit: 1,
+    plan_expiry: ""
+  });
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -60,6 +67,13 @@ export default function ProfilePage() {
       setEmail(data.email || "");
       setCreatedAt(data.created_at || "");
       setAvatarUrl(data.avatar_url || "");
+      
+      // Live subscription columns ko state sync me feed kiya gaya hai
+      setSubscription({
+        plan: data.plan || "free",
+        item_limit: data.item_limit ?? 1,
+        plan_expiry: data.plan_expiry || ""
+      });
     }
 
     setLoading(false);
@@ -152,7 +166,6 @@ export default function ProfilePage() {
       alert(err.message);
     }
   }
-
   async function updatePassword() {
     if (newPassword !== confirmPassword) {
       alert("Passwords do not match");
@@ -190,7 +203,8 @@ export default function ProfilePage() {
     );
   }
 
-  return (    <div className="p-4 sm:p-6 md:p-8 bg-slate-50 min-h-screen">
+  return (    
+    <div className="p-4 sm:p-6 md:p-8 bg-slate-50 min-h-screen">
 
       {/* Header */}
       <div className="mb-8">
@@ -201,6 +215,38 @@ export default function ProfilePage() {
         <p className="text-slate-500 mt-2">
           Manage your account information and security.
         </p>
+      </div>
+
+      {/* ✨ LIVE SUBSCRIPTION METER SECTION (Naya Module bina purani design chhede) */}
+      <div className="bg-white rounded-3xl border p-5 md:p-8 mb-8">
+        <h2 className="text-2xl md:text-3xl font-bold mb-2">
+          Subscription Status
+        </h2>
+        <p className="text-slate-500 mb-6">
+          Review your live billing profile and features constraint limits.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Active Plan</p>
+            <p className="text-2xl font-black text-[#0B1533] uppercase">
+              {subscription.plan === 'free' ? 'Starter' : subscription.plan}
+            </p>
+          </div>
+          <div className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Project Limit</p>
+            <p className="text-2xl font-black text-slate-800">
+              {subscription.plan.toLowerCase() === 'business' ? 'Unlimited' : `${subscription.item_limit} Projects`}
+            </p>
+          </div>
+          <div className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Renews / Expires On</p>
+            <p className="text-sm font-bold text-slate-700 mt-1">
+              {subscription.plan_expiry 
+                ? new Date(subscription.plan_expiry).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+                : "No Active Expiry"}
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Profile Information */}
@@ -335,7 +381,6 @@ export default function ProfilePage() {
                 }
                 className="w-full border rounded-xl px-4 py-3"
               />
-
               <button
                 type="button"
                 onClick={() =>
