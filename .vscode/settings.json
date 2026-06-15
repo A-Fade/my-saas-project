@@ -1,4 +1,5 @@
 {
+  "deno.enable": true,
   "deno.enablePaths": [
     "supabase/functions"
   ],
@@ -17,8 +18,5 @@
     "fs",
     "http",
     "net"
-  ],
-  "[typescript]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  }
+  ]
 }
