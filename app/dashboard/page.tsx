@@ -121,21 +121,21 @@ export default function Dashboard() {
   const totalTodaySpend = data.todaySpendsList.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
 
   if (loading) return (
-    <div className="h-screen flex items-center justify-center bg-white">
-      <div className="w-8 h-8 border-2 border-slate-800 border-t-transparent rounded-full animate-spin"></div>
+    <div className="h-screen w-full flex items-center justify-center bg-white px-4">
+      <div className="w-10 h-10 border-4 border-slate-800 border-t-transparent rounded-full animate-spin"></div>
     </div>
   );
-
-  return (
+return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans antialiased text-slate-900">
       <Topbar />
-      <main className="p-6 md:p-12 max-w-[1400px] mx-auto w-full">
+      <main className="p-4 sm:p-6 md:p-12 max-w-[1400px] mx-auto w-full">
         
-        <div className="mb-10">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Dashboard</h1>
+        <div className="mb-6 sm:mb-10">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Dashboard</h1>
         </div>
+        
         {/* ⚡ Dynamic Plan Status Meter & Active Plan Badge */}
-        <div className="mb-6 flex flex-wrap items-center gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="mb-6 flex flex-col md:flex-row md:items-center gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Current Plan:</span>
             <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase border ${
@@ -148,7 +148,7 @@ export default function Dashboard() {
           </div>
           
           {/* Live System Resource Counters */}
-          <div className="flex flex-wrap items-center gap-4 md:gap-6 ml-auto text-xs font-medium text-slate-600">
+          <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-2 sm:gap-4 md:gap-6 md:ml-auto text-xs font-medium text-slate-600 border-t border-slate-100 md:border-t-0 pt-3 md:pt-0">
             <div>
               Projects: <strong className="text-slate-900">{data.totalProjects}</strong> / {userProfile.plan.toLowerCase() === 'business' ? '∞' : userProfile.item_limit}
             </div>
@@ -165,8 +165,8 @@ export default function Dashboard() {
 
         {/* 👑 PREMIUM BUSINESS ANALYTICS MODULE */}
         {userProfile.plan.toLowerCase() === "business" && (
-          <div className="mb-8 p-5 border border-amber-200 bg-amber-50/40 rounded-2xl flex items-start gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
-            <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-amber-500 text-white shadow-sm shrink-0">
+          <div className="mb-8 p-4 sm:p-5 border border-amber-200 bg-amber-50/40 rounded-2xl flex items-start gap-3 sm:gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
+            <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-amber-500 text-white shadow-sm shrink-0 text-base">
               👑
             </div>
             <div>
@@ -179,7 +179,7 @@ export default function Dashboard() {
         )}
 
         {/* 6 PROFESSIONAL COLUMNS (CLEAN WHITE) */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-12">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-8 sm:mb-12">
           <StatCard onClick={() => router.push('/projects')} title="Projects" value={data.totalProjects} icon={<Folder size={18}/>} />
           <StatCard onClick={() => router.push('/workers')} title="Workers" value={data.totalWorkers} icon={<Users size={18}/>} />
           <StatCard onClick={() => setView('today')} title="Today Pay" value={`₹${data.todaySalary}`} icon={<Banknote size={18}/>} />
@@ -188,20 +188,20 @@ export default function Dashboard() {
           <StatCard onClick={() => setView('history')} title="History" value="View" icon={<History size={18}/>} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10">
           {/* Project List */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h3 className="font-semibold text-sm text-slate-700 uppercase tracking-wider">Project Status</h3>
+            <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h3 className="font-semibold text-xs sm:text-sm text-slate-700 uppercase tracking-wider">Project Status</h3>
             </div>
-            <div className="p-2 max-h-[400px] overflow-y-auto">
+            <div className="p-2 max-h-[350px] sm:max-h-[400px] overflow-y-auto">
               {data.allProjects.length === 0 ? (
-                <p className="text-center py-20 text-slate-400 text-sm">No projects added yet</p>
+                <p className="text-center py-16 sm:py-20 text-slate-400 text-sm">No projects added yet</p>
               ) : (
                 data.allProjects.map(p => (
-                  <div key={p.id} onClick={() => router.push(`/projects/${p.id}`)} className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer border border-transparent hover:border-slate-100">
-                    <span className="font-medium text-slate-800">{p.name}</span>
-                    <span className={`text-[10px] font-bold px-3 py-1 rounded-full border ${p.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{p.status}</span>
+                  <div key={p.id} onClick={() => router.push(`/projects/${p.id}`)} className="flex items-center justify-between p-3 sm:p-4 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer border border-transparent hover:border-slate-100">
+                    <span className="font-medium text-sm sm:text-base text-slate-800 truncate pr-2">{p.name}</span>
+                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border shrink-0 ${p.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{p.status}</span>
                   </div>
                 ))
               )}
@@ -210,42 +210,47 @@ export default function Dashboard() {
 
           {/* Material Expenses */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h3 className="font-semibold text-sm text-slate-700 uppercase tracking-wider">Daily Material Spends</h3>
+            <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h3 className="font-semibold text-xs sm:text-sm text-slate-700 uppercase tracking-wider">Daily Material Spends</h3>
             </div>
-            <div className="p-2 max-h-[400px] overflow-y-auto">
-              {data.todaySpendsList.length === 0 ? <p className="text-center py-20 text-slate-400 text-sm">No transactions today</p> : data.todaySpendsList.map(s => (
-                <div key={s.id} onClick={() => router.push(`/projects/${s.project_id}`)} className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer border border-transparent hover:border-slate-100">
-                  <div>
-                    <p className="font-medium text-slate-800">{s.item}</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">{s.projects?.name}</p>
+            <div className="p-2 max-h-[350px] sm:max-h-[400px] overflow-y-auto">
+              {data.todaySpendsList.length === 0 ? (
+                <p className="text-center py-16 sm:py-20 text-slate-400 text-sm">No transactions today</p>
+              ) : (
+                data.todaySpendsList.map(s => (
+                  <div key={s.id} onClick={() => router.push(`/projects/${s.project_id}`)} className="flex items-center justify-between p-3 sm:p-4 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer border border-transparent hover:border-slate-100">
+                    <div className="truncate pr-2">
+                      <p className="font-medium text-sm sm:text-base text-slate-800 truncate">{s.item}</p>
+                      <p className="text-[11px] text-slate-500 mt-0.5 truncate">{s.projects?.name}</p>
+                    </div>
+                    <span className="font-bold text-sm sm:text-base text-slate-900 shrink-0">₹{s.amount}</span>
                   </div>
-                  <span className="font-bold text-slate-900">₹{s.amount}</span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
-
-        {/* --- DETAIL POPUP --- */}
+{/* --- DETAIL POPUP --- */}
         {view && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px]">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-[2px]">
             <div className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-xl animate-in fade-in zoom-in duration-200">
-              <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 className="font-bold text-slate-800 text-sm uppercase tracking-widest">{view === 'today' ? "Daily Attendance" : "Payment Records"}</h3>
-                <button onClick={() => setView(null)} className="p-2 text-slate-400 hover:text-slate-600 rounded-full"><X size={20}/></button>
+              <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 className="font-bold text-slate-800 text-xs sm:text-sm uppercase tracking-wider sm:tracking-widest">{view === 'today' ? "Daily Attendance" : "Payment Records"}</h3>
+                <button onClick={() => setView(null)} className="p-2 text-slate-400 hover:text-slate-600 rounded-full transition-colors"><X size={20}/></button>
               </div>
-              <div className="p-6 max-h-[60vh] overflow-y-auto space-y-3">
+              <div className="p-4 sm:p-6 max-h-[70vh] sm:max-h-[60vh] overflow-y-auto space-y-3">
                 {view === 'today' && (
-                  data.todayWorkersList.length === 0 ? <p className="text-center py-10 text-slate-400 italic">No attendance marked.</p> :
+                  data.todayWorkersList.length === 0 ? <p className="text-center py-10 text-slate-400 text-sm italic">No attendance marked.</p> :
                   data.todayWorkersList.map((att:any, i:number) => (
-                    <div key={i} className="p-4 rounded-xl border border-slate-100 flex justify-between items-center hover:bg-slate-50">
-                      <div>
-                        <p className="font-bold text-slate-800">{att.workers?.name}</p>
-                        <p className="text-xs text-slate-500 mt-1">{att.projects?.name} • {att.workers?.phone || 'No phone'}</p>
+                    <div key={i} className="p-3 sm:p-4 rounded-xl border border-slate-100 flex items-center justify-between hover:bg-slate-50 transition-colors gap-2">
+                      <div className="truncate">
+                        <p className="font-bold text-sm sm:text-base text-slate-800 truncate">{att.workers?.name}</p>
+                        <p className="text-xs text-slate-500 mt-1 truncate">
+                          {att.projects?.name} <span className="hidden sm:inline">•</span> <br className="sm:hidden" /> {att.workers?.phone || 'No phone'}
+                        </p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-slate-900">₹{att.workers?.salary}</p>
+                      <div className="text-right shrink-0">
+                        <p className="font-bold text-sm sm:text-base text-slate-900">₹{att.workers?.salary}</p>
                         <p className="text-[10px] font-bold text-emerald-600 uppercase mt-0.5 tracking-wider">Present</p>
                       </div>
                     </div>
@@ -262,14 +267,14 @@ export default function Dashboard() {
 
 function StatCard({ title, value, icon, onClick }: any) {
   return (
-    <div onClick={onClick} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 cursor-pointer hover:border-slate-300 hover:shadow-md transition-all group">
-      <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 mb-4 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+    <div onClick={onClick} className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 cursor-pointer hover:border-slate-300 hover:shadow-md transition-all group select-none active:scale-[0.98] md:active:scale-100">
+      <div className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 mb-3 sm:mb-4 group-hover:bg-slate-900 group-hover:text-white transition-colors">
         {icon}
       </div>
-      <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 mb-1">{title}</p>
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{value}</h2>
-        <ChevronRight size={14} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-all" />
+      <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider sm:tracking-widest text-slate-500 mb-0.5 sm:mb-1 truncate">{title}</p>
+      <div className="flex items-center justify-between gap-1">
+        <h2 className="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight truncate">{value}</h2>
+        <ChevronRight size={14} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-all hidden sm:block shrink-0" />
       </div>
     </div>
   );
