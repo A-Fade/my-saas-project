@@ -97,7 +97,7 @@ export default function LandingPage() {
 
           <div className="hidden md:flex items-center gap-8 font-semibold text-sm text-slate-600">
             <Link href="#features" className="hover:text-blue-600 transition-colors">Features</Link>
-            <Link href="#how-it-works" className="hover:text-blue-600 transition-colors">How It Works</Link>
+            <Link href="/guides" className="hover:text-blue-600 transition-colors">How It Works</Link>
             <Link href="/pricing" className="hover:text-blue-600 transition-colors">Pricing</Link>
             <Link href="/faq" className="hover:text-blue-600 transition-colors">FAQ</Link>
             <Link href="/about" className="hover:text-blue-600 transition-colors">About Us</Link>
@@ -113,9 +113,9 @@ export default function LandingPage() {
           {isMenuOpen && (
             <div className="md:hidden absolute top-20 left-0 w-full bg-white border-b border-slate-200 shadow-xl p-6 flex flex-col gap-4 font-medium text-slate-600">
               <Link href="#features" onClick={() => setIsMenuOpen(false)}>Features</Link>
-              <Link href="#how-it-works" onClick={() => setIsMenuOpen(false)}>How It Works</Link>
+              <Link href="/guides" onClick={() => setIsMenuOpen(false)}>How It Works</Link>
               <Link href="/pricing" onClick={() => setIsMenuOpen(false)}>Pricing</Link>
-              <Link href="#faq" onClick={() => setIsMenuOpen(false)}>FAQ</Link>
+              <Link href="/faq" onClick={() => setIsMenuOpen(false)}>FAQ</Link>
               <Link href="/about" onClick={() => setIsMenuOpen(false)}>About Us</Link>
               <Link href="/login" className="bg-[#020617] text-white text-center py-3 rounded-lg font-bold" onClick={() => setIsMenuOpen(false)}>Get Started</Link>
             </div>
