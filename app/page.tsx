@@ -184,13 +184,20 @@ export default function LandingPage() {
 
           {/* Hero Right: Live Interactive Dashboard Mockup matching image */}
           <div className="lg:col-span-7 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden grid grid-cols-12 h-[500px]">
-            {/* Mockup Sidebar */}
-            <div className="col-span-3 bg-[#0b1329] p-4 flex flex-col justify-between text-white">
-              <div className="space-y-6">
-                <div className="flex items-center gap-2 px-2">
-                  <div className="w-6 h-6 bg-amber-500 rounded flex items-center justify-center text-xs font-black">B</div>
-                  <span className="text-sm font-bold tracking-tight">Builder<span className="text-blue-400">Pro</span></span>
-                </div>
+           {/* Mockup Sidebar */}
+<div className="col-span-3 bg-[#0b1329] p-4 flex flex-col justify-between text-white">
+  <div className="space-y-6">
+    {/* Updated Logo with Real icon.png */}
+    <div className="flex items-center gap-2 px-2">
+      <div className="w-6 h-6 rounded overflow-hidden bg-white flex items-center justify-center shrink-0">
+        <img 
+          src="/icon.png" 
+          alt="Logo" 
+          className="w-full h-full object-contain"
+        />
+      </div>
+      <span className="text-sm font-bold tracking-tight">Builder<span className="text-blue-400">Pro</span></span>
+    </div>
                 <div className="space-y-1">
                   {sidebarItems.map((item) => (
                     <button 
@@ -393,13 +400,19 @@ export default function LandingPage() {
 
           {/* Section Right Showcase Mockup Matching Lower Half Image */}
           <div className="lg:col-span-8 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden grid grid-cols-12 h-[420px]">
-            {/* Sidebar Visual */}
-            <div className="col-span-3 bg-[#0b1329] p-4 text-white flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="flex items-center gap-1.5 px-1">
-                  <div className="w-5 h-5 bg-amber-500 rounded flex items-center justify-center text-[10px] font-black">B</div>
-                  <span className="text-xs font-bold">Builder<span className="text-blue-400">Pro</span></span>
-                </div>
+        {/* Sidebar Visual */}
+<div className="col-span-3 bg-[#0b1329] p-4 text-white flex flex-col justify-between">
+  <div className="space-y-4">
+    <div className="flex items-center gap-1.5 px-1">
+      <div className="w-5 h-5 rounded overflow-hidden bg-white flex items-center justify-center shrink-0">
+        <img 
+          src="/icon.png" 
+          alt="Logo" 
+          className="w-full h-full object-contain"
+        />
+      </div>
+      <span className="text-xs font-bold">Builder<span className="text-blue-400">Pro</span></span>
+    </div>
                 <div className="space-y-1">
                   {sidebarItems.slice(0, 6).map((item) => (
                     <div key={item.name} className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-[10px] font-medium ${item.name === 'Dashboard' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}>
