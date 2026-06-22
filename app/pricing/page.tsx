@@ -216,7 +216,7 @@ export default function PricingPage() {
 
             <div className="space-y-4 mt-8">
               <Feature text="1 Project" />
-              <Feature text="2 Workers" />
+              <Feature text="6 Workers" />
               <Feature text="1 Client" />
               <Feature text="Basic Payment Tracking" />
               <Feature text="Basic Dashboard" />
@@ -251,7 +251,7 @@ export default function PricingPage() {
 
             <div className="space-y-4 mt-8">
               <Feature text="10 Projects" />
-              <Feature text="120 Workers" />
+              <Feature text="250 Workers" />
               <Feature text="10 Clients" />
               <Feature text="Payment Tracking" />
               <Feature text="Advanced Dashboard" />

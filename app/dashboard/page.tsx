@@ -21,7 +21,7 @@ export default function Dashboard() {
   const [userProfile, setUserProfile] = useState({
     plan: "free",
     item_limit: 1,       // Projects Limit (Starter: 1, Pro: 10)
-    workers_limit: 2,    // Workers Limit (Starter: 2, Pro: 120)
+    workers_limit: 6,    // Workers Limit (Starter: 6, Pro: 250)
     clients_limit: 1,    // Clients Limit (Starter: 1, Pro: 10)
     items_count: 0
   });
@@ -63,14 +63,14 @@ export default function Dashboard() {
 
       // 📊 Plan features mapping logic as per requirements
       let pLimit = 1;   // Starter (Free) Projects
-      let wLimit = 2;   // Starter (Free) Workers
+      let wLimit = 6;   // Starter (Free) Workers
       let cLimit = 1;   // Starter (Free) Clients
 
       const currentPlan = profile.plan || "free";
 
       if (currentPlan.toLowerCase() === "pro") {
         pLimit = 10;    // Pro: 10 Projects
-        wLimit = 120;   // Pro: 120 Workers
+        wLimit = 250;   // Pro: 250 Workers
         cLimit = 10;    // Pro: 10 Clients
       } else if (currentPlan.toLowerCase() === "business") {
         pLimit = 99999; // Business: Unlimited Projects
