@@ -15,20 +15,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BuilderPro SaaS - Construction Management Software for Contractors",
+  title: "BuilderPro | Best Construction Management Software & Labor Attendance App",
   description:
-    "BuilderPro helps contractors and construction companies manage projects, workers, payments, quotes, invoices and expenses from one powerful dashboard.",
+    "Stop using diaries & Excel. BuilderPro helps contractors, builders, and construction companies track multiple sites, manage daily labor attendance, monitor site expenses (kharcha), and handle payments from one simple app.",
   keywords: [
     "construction management software",
-    "contractor software",
+    "contractor app India",
     "builder software",
+    "labor attendance app",
+    "site expense tracker",
     "construction project management",
-    "worker management",
-    "labor tracking",
-    "construction business software",
-    "project tracking",
-    "payment tracking",
+    "daily wage ledger",
+    "site kharcha manager",
     "construction SaaS",
+    "digital dihaadi diary"
   ],
 
   icons: {

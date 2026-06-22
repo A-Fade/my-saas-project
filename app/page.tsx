@@ -315,6 +315,48 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* SEO-Optimized Content Section for Google Ranking */}
+<section className="py-20 bg-slate-50 border-y border-slate-100">
+  <div className="max-w-5xl mx-auto px-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+      
+      {/* Left Column */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+          Ab Notebook, Diary aur Excel Sheets ko Bolo Alvida!
+        </h2>
+        <p className="text-slate-600 text-sm leading-relaxed font-medium">
+          Aaj bhi bohot se contractors aur builders apna keemti waqt pockets notebooks, dihaadi diary aur complex Excel sheets par waste karte hain. Manual entry ke wajah se material ka hisab bigad jata hai aur labor attendance mein galti hoti hai. 
+        </p>
+        <p className="text-slate-600 text-sm leading-relaxed font-medium">
+          <strong>Builder Pro</strong> ek modern construction management software hai jo aapke poore dhandhe ko digitalize karta hai. Yeh software contractors ke liye unki apni bhasha mein sabse aasan tool hai.
+        </p>
+      </div>
+
+      {/* Right Column */}
+      <div className="space-y-4">
+        <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+          India's Leading Construction Management App & Software
+        </h3>
+        <p className="text-slate-600 text-sm leading-relaxed font-medium">
+          Chahe aap residential homes bana rahe hon, commercial buildings ka kaam ho, ya badi renovations — Builder Pro har jagah fit baithta hai. Aap ek hi dashboard se multiple sites track kar sakte hain, daily material spends monitor kar sakte hain, aur labor payments ka saaf-suthra digital ledger maintain kar sakte hain.
+        </p>
+        <div className="pt-2">
+          <span className="text-xs font-bold text-blue-600 uppercase tracking-wider block mb-2">Popular Searches:</span>
+          <div className="flex flex-wrap gap-2">
+            {["Construction Management Software", "Best App for Contractors", "Labor Attendance App", "Site Expense Tracker", "Digital Ledger for Builders"].map((keyword, kIdx) => (
+              <span key={kIdx} className="text-[11px] bg-white border border-slate-200 px-2.5 py-1 rounded-md text-slate-500 font-semibold shadow-sm">
+                {keyword}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
       {/* Secondary Dashboard Overview Section */}
       <section className="py-24 bg-[#f8fafc] border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
