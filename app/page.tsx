@@ -167,9 +167,18 @@ export default function LandingPage() {
             {/* Social Proof Badges */}
             <div className="flex items-center gap-4 pt-6 border-t border-slate-100">
               <div className="flex -space-x-3">
-                {[1, 2, 3, 4].map((num) => (
-                  <div key={num} className="w-10 h-10 rounded-full border-2 border-white bg-slate-300 overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-tr from-slate-400 to-slate-500 flex items-center justify-center text-[10px] text-white font-bold uppercase">U{num}</div>
+                {[
+                  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&h=100&q=80",
+                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&h=100&q=80",
+                  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&h=100&q=80",
+                  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&h=100&q=80"
+                ].map((imgUrl, index) => (
+                  <div key={index} className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 overflow-hidden shadow-sm">
+                    <img 
+                      src={imgUrl} 
+                      alt={`Contractor ${index + 1}`} 
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 ))}
               </div>
@@ -180,25 +189,26 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </div> {/* <-- Yeh extra closing div left content ko bilkul sahi close karega */}
 
-          {/* Hero Right: Live Interactive Dashboard Mockup matching image */}
+          {/* Hero Right: Live Interactive Dashboard Mockup */}
           <div className="lg:col-span-7 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden grid grid-cols-12 h-[500px]">
-           {/* Mockup Sidebar */}
-<div className="col-span-3 bg-[#0b1329] p-4 flex flex-col justify-between text-white">
-  <div className="space-y-6">
-    {/* Updated Logo with Real icon.png */}
-    <div className="flex items-center gap-2 px-2">
-      <div className="w-6 h-6 rounded overflow-hidden bg-white flex items-center justify-center shrink-0">
-        <img 
-          src="/icon.png" 
-          alt="Logo" 
-          className="w-full h-full object-contain"
-        />
-      </div>
-      <span className="text-sm font-bold tracking-tight">Builder<span className="text-blue-400">Pro</span></span>
-    </div>
-                <div className="space-y-1">
+            {/* Mockup Sidebar */}
+            <div className="col-span-3 bg-[#0b1329] p-4 flex flex-col justify-between text-white">
+              <div className="space-y-6">
+                {/* Updated Logo with Real icon.png */}
+                <div className="flex items-center gap-2 px-2">
+                  <div className="w-6 h-6 rounded overflow-hidden bg-white flex items-center justify-center shrink-0">
+                    <img 
+                      src="/icon.png" 
+                      alt="Logo" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <span className="text-sm font-bold tracking-tight">Builder<span className="text-blue-400">Pro</span></span>
+                </div>
+                
+                    <div className="space-y-1">
                   {sidebarItems.map((item) => (
                     <button 
                       key={item.name} 
